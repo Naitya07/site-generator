@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ meta_description }}" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="{{ business_name }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <title>{{ business_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:      {{ palette.primary }};
+      --primary-dark: {{ palette.primary_dark }};
+      --secondary:    {{ palette.secondary }};
+      --accent:       {{ palette.accent }};
+      --bg:           #080810;
+      --surface:      #11111E;
+      --surface2:     #18182A;
+      --text:         #F5F5FF;
+      --text-muted:   #8888AA;
+      --border:       #222235;
+      --grad-start:   {{ palette.gradient_start }};
+      --grad-end:     {{ palette.gradient_end }};
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Poppins', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(8,8,16,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 1.4rem; font-weight: 900; letter-spacing: -0.03em;
+      color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.88rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end)) !important;
+      color: #fff !important; padding: 0.5rem 1.25rem; border-radius: 6px;
+    }
+    .nav-hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+    .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 8rem 2rem 6rem;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+    }
+    .hero-bg-circle {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: 0.18;
+    }
+    .hero-bg-circle:nth-child(1) {
+      width: 600px; height: 600px;
+      background: var(--grad-start);
+      top: -200px; left: -100px;
+    }
+    .hero-bg-circle:nth-child(2) {
+      width: 500px; height: 500px;
+      background: var(--grad-end);
+      bottom: -100px; right: -100px;
+    }
+    .hero-container {
+      max-width: 1100px; margin: 0 auto; position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    }
+    .hero-kicker {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(99,99,255,0.1); border: 1px solid rgba(99,99,255,0.25);
+      padding: 0.4rem 1rem; border-radius: 100px; margin-bottom: 1.5rem;
+    }
+    .hero-kicker::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+    h1.hero-title {
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 900; line-height: 1.0;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.25rem;
+    }
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-desc {
+      font-size: 1.05rem; color: var(--text-muted);
+      margin-bottom: 2.5rem; line-height: 1.75;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-grad {
+      display: inline-block; padding: 1rem 2.25rem;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff; font-weight: 700; font-size: 0.95rem;
+      border-radius: 8px; text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.3s; font-family: inherit;
+    }
+    .btn-grad:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(0,0,0,0.4); filter: brightness(1.1); }
+    .btn-ghost {
+      display: inline-block; padding: 1rem 2.25rem;
+      background: transparent; color: var(--text);
+      font-weight: 600; font-size: 0.95rem;
+      border-radius: 8px; text-decoration: none;
+      border: 1px solid var(--border); cursor: pointer; transition: all 0.3s; font-family: inherit;
+    }
+    .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+    .hero-visual {
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .hero-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.5rem;
+      width: 100%; max-width: 420px;
+      position: relative; overflow: hidden;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--grad-start), var(--grad-end));
+    }
+    .hero-card-stat { margin-bottom: 1.5rem; }
+    .stat-num {
+      font-size: 2.5rem; font-weight: 900; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .hero-card-divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+    .hero-card-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; font-weight: 600; color: #4ADE80;
+      background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2);
+      padding: 0.35rem 0.85rem; border-radius: 100px;
+    }
+    .hero-card-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; }
+
+    /* ── SECTION BASE ── */
+    section { padding: 6rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--primary); margin-bottom: 1rem;
+    }
+    .section-eyebrow::before { content: '//'; opacity: 0.5; }
+    h2.section-title {
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      font-weight: 900; letter-spacing: -0.035em; line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .section-sub { font-size: 1rem; color: var(--text-muted); max-width: 500px; }
+
+    /* ── ABOUT ── */
+    #about { background: var(--surface); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+    .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
+    .stat-box {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .stat-box-num {
+      font-size: 2rem; font-weight: 900; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-box-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .about-visual-wrap {
+      position: relative;
+    }
+    .about-main-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; aspect-ratio: 1; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .about-bg-glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(99,99,255,0.1) 0%, transparent 70%);
+    }
+    .about-main-icon { font-size: 6rem; position: relative; z-index: 1; }
+
+    /* ── SERVICES ── */
+    #services { background: var(--bg); }
+    .services-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5px; background: var(--border); border-radius: 16px; overflow: hidden; }
+    .service-item {
+      background: var(--surface); padding: 2.5rem;
+      transition: background 0.3s;
+      position: relative;
+    }
+    .service-item:hover { background: var(--surface2); }
+    .service-number {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em;
+      color: var(--primary); opacity: 0.7; margin-bottom: 1rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .service-item h3 {
+      font-size: 1.3rem; font-weight: 800; margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+    .service-item p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+    .service-arrow {
+      position: absolute; bottom: 2.5rem; right: 2.5rem;
+      font-size: 1.2rem; color: var(--primary); opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .service-item:hover .service-arrow { opacity: 1; }
+
+    /* ── TESTIMONIALS ── */
+    #testimonials { background: var(--surface); }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .t-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.75rem;
+      transition: all 0.3s;
+    }
+    .t-card:hover { border-color: var(--primary); transform: translateY(-4px); }
+    .t-stars { font-size: 0.85rem; letter-spacing: 2px; color: #FBBF24; margin-bottom: 1rem; }
+    .t-text { font-size: 0.88rem; line-height: 1.75; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .t-author { display: flex; align-items: center; gap: 0.75rem; }
+    .t-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .t-name { font-size: 0.9rem; font-weight: 700; }
+    .t-role { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ── FAQ ── */
+    #faq { background: var(--bg); }
+    .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .faq-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.75rem;
+    }
+    .faq-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .faq-card p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* ── GALLERY ── */
+    #gallery { background: var(--surface); }
+    .gallery-masonry { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .gallery-cell {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; cursor: pointer; transition: all 0.3s; overflow: hidden;
+    }
+    .gallery-cell:nth-child(1) { aspect-ratio: 1; }
+    .gallery-cell:nth-child(2) { aspect-ratio: 4/3; }
+    .gallery-cell:nth-child(3) { aspect-ratio: 3/4; grid-row: span 2; }
+    .gallery-cell:nth-child(4) { aspect-ratio: 4/3; }
+    .gallery-cell:nth-child(5) { aspect-ratio: 1; }
+    .gallery-cell:hover { transform: scale(0.98); opacity: 0.9; }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--surface); }
+    .contact-wrap {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 24px; overflow: hidden;
+      display: grid; grid-template-columns: 1fr 1.4fr;
+    }
+    .contact-left {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      padding: 3rem;
+    }
+    .contact-left h3 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.75rem; }
+    .contact-left p { font-size: 0.9rem; opacity: 0.85; margin-bottom: 2rem; }
+    .contact-detail { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .contact-detail-icon { font-size: 1.1rem; margin-top: 2px; }
+    .contact-detail-text { font-size: 0.88rem; }
+    .contact-detail-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.65; }
+    .contact-right { padding: 3rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.04em; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 0.8rem 1rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-family: inherit;
+      font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+    .form-group textarea { resize: vertical; min-height: 110px; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* ── MAP ── */
+    #map { background: var(--bg); }
+    .map-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; height: 320px;
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+      color: var(--text-muted);
+    }
+    .map-box-icon { font-size: 3rem; }
+    .map-box a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
+
+    /* ── FOOTER ── */
+    footer { background: #04040B; padding: 3.5rem 2rem 2rem; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1100px; margin: 0 auto; }
+    .footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 2rem; }
+    .footer-logo { font-size: 1.3rem; font-weight: 900; letter-spacing: -0.03em; }
+    .footer-tagline { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.4rem; }
+    .footer-links-grid { display: flex; gap: 3.5rem; flex-wrap: wrap; }
+    .footer-col h4 { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 1rem; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-col a { color: var(--text-muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 1.5rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── ANIMATIONS ── */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+
+    @media (max-width: 900px) {
+      .hero-container, .about-grid, .services-list { grid-template-columns: 1fr; }
+      .testimonials-grid, .faq-grid, .gallery-masonry { grid-template-columns: 1fr; }
+      .contact-wrap { grid-template-columns: 1fr; }
+      .gallery-cell { aspect-ratio: 4/3 !important; grid-row: span 1 !important; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 72px; left: 0; right: 0;
+        background: rgba(8,8,16,0.97); border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem; gap: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    {{ business_name }}
+  </a>
+  <ul class="nav-links" id="navLinks">
+    {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+    {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+    {% if "Testimonials" in sections %}<li><a href="#testimonials">Reviews</a></li>{% endif %}
+    {% if "FAQ" in sections %}<li><a href="#faq">FAQ</a></li>{% endif %}
+    {% if "Gallery" in sections %}<li><a href="#gallery">Work</a></li>{% endif %}
+    {% if "Contact Form" in sections or "Map" in sections %}
+    <li><a href="#contact" class="nav-cta">Contact</a></li>
+    {% endif %}
+  </ul>
+  <div class="nav-hamburger" id="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+{% if "Hero" in sections %}
+<section id="hero">
+  <div class="hero-bg">
+    <div class="hero-bg-circle"></div>
+    <div class="hero-bg-circle"></div>
+  </div>
+  <div class="hero-container">
+    <div>
+      <div class="hero-kicker">{{ business_name }}</div>
+      <h1 class="hero-title">{{ hero_headline | replace(" ", "<br>", 1) | safe }}</h1>
+      <p class="hero-desc">{{ hero_subheadline }}</p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn-grad">{{ hero_cta }}</a>
+        {% if "Services" in sections %}<a href="#services" class="btn-ghost">Explore Services</a>{% endif %}
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hero-card-stat">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Client Satisfaction</div>
+        </div>
+        <div class="hero-card-divider"></div>
+        <div class="hero-card-stat" style="margin-bottom:1rem">
+          <div class="stat-num">500+</div>
+          <div class="stat-label">Projects Delivered</div>
+        </div>
+        <div class="hero-card-badge">Available Now</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "About" in sections %}
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div>
+        <div class="section-eyebrow reveal">Our Story</div>
+        <h2 class="section-title reveal">{{ about_headline }}</h2>
+        <p class="section-sub reveal" style="margin-bottom:1.5rem;">{{ about_paragraph }}</p>
+        <div class="about-stats reveal">
+          <div class="stat-box">
+            <div class="stat-box-num">10+</div>
+            <div class="stat-box-label">Years Experience</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-num">500+</div>
+            <div class="stat-box-label">Happy Clients</div>
+          </div>
+        </div>
+      </div>
+      <div class="about-visual-wrap reveal">
+        <div class="about-main-card">
+          <div class="about-bg-glow"></div>
+          <div class="about-main-icon">🚀</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Services" in sections %}
+<section id="services">
+  <div class="container">
+    <div style="margin-bottom:3rem;" class="reveal">
+      <div class="section-eyebrow">Services</div>
+      <h2 class="section-title">{{ services_headline }}</h2>
+      <p class="section-sub">{{ services_subheadline }}</p>
+    </div>
+    <div class="services-list reveal">
+      <div class="service-item">
+        <div class="service-number">01</div>
+        <h3>{{ service_1_name }}</h3>
+        <p>{{ service_1_description }}</p>
+        <div class="service-arrow">→</div>
+      </div>
+      <div class="service-item">
+        <div class="service-number">02</div>
+        <h3>{{ service_2_name }}</h3>
+        <p>{{ service_2_description }}</p>
+        <div class="service-arrow">→</div>
+      </div>
+      <div class="service-item">
+        <div class="service-number">03</div>
+        <h3>{{ service_3_name }}</h3>
+        <p>{{ service_3_description }}</p>
+        <div class="service-arrow">→</div>
+      </div>
+      <div class="service-item">
+        <div class="service-number">04</div>
+        <h3>{{ service_4_name }}</h3>
+        <p>{{ service_4_description }}</p>
+        <div class="service-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Testimonials" in sections %}
+<section id="testimonials">
+  <div class="container">
+    <div style="margin-bottom:3rem;" class="reveal">
+      <div class="section-eyebrow">Reviews</div>
+      <h2 class="section-title">{{ testimonials_headline }}</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="t-card reveal reveal-d1">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"{{ testimonial_1_text }}"</p>
+        <div class="t-author">
+          <div class="t-avatar">{{ testimonial_1_name[:1] }}</div>
+          <div><div class="t-name">{{ testimonial_1_name }}</div><div class="t-role">{{ testimonial_1_role }}</div></div>
+        </div>
+      </div>
+      <div class="t-card reveal reveal-d2">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"{{ testimonial_2_text }}"</p>
+        <div class="t-author">
+          <div class="t-avatar">{{ testimonial_2_name[:1] }}</div>
+          <div><div class="t-name">{{ testimonial_2_name }}</div><div class="t-role">{{ testimonial_2_role }}</div></div>
+        </div>
+      </div>
+      <div class="t-card reveal reveal-d3">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-text">"{{ testimonial_3_text }}"</p>
+        <div class="t-author">
+          <div class="t-avatar">{{ testimonial_3_name[:1] }}</div>
+          <div><div class="t-name">{{ testimonial_3_name }}</div><div class="t-role">{{ testimonial_3_role }}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Gallery" in sections %}
+<section id="gallery">
+  <div class="container">
+    <div style="margin-bottom:3rem;" class="reveal">
+      <div class="section-eyebrow">Portfolio</div>
+      <h2 class="section-title">Our Latest Work</h2>
+    </div>
+    <div class="gallery-masonry reveal">
+      <div class="gallery-cell">📸</div>
+      <div class="gallery-cell">🎨</div>
+      <div class="gallery-cell">✨</div>
+      <div class="gallery-cell">🌟</div>
+      <div class="gallery-cell">💫</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "FAQ" in sections %}
+<section id="faq">
+  <div class="container">
+    <div style="margin-bottom:3rem;" class="reveal">
+      <div class="section-eyebrow">FAQ</div>
+      <h2 class="section-title">{{ faq_headline }}</h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-card reveal reveal-d1"><h4>{{ faq_1_q }}</h4><p>{{ faq_1_a }}</p></div>
+      <div class="faq-card reveal reveal-d2"><h4>{{ faq_2_q }}</h4><p>{{ faq_2_a }}</p></div>
+      <div class="faq-card reveal reveal-d3"><h4>{{ faq_3_q }}</h4><p>{{ faq_3_a }}</p></div>
+      <div class="faq-card reveal reveal-d1"><h4>{{ faq_4_q }}</h4><p>{{ faq_4_a }}</p></div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Map" in sections %}
+<section id="map">
+  <div class="container">
+    <div style="margin-bottom:2rem;" class="reveal">
+      <div class="section-eyebrow">Location</div>
+      <h2 class="section-title">Find Us</h2>
+    </div>
+    <div class="map-box reveal">
+      <div class="map-box-icon">📍</div>
+      {% if address %}<div style="font-weight:600;font-size:1rem;">{{ address }}</div>{% endif %}
+      {% if address %}<a href="https://maps.google.com?q={{ address | urlencode }}" target="_blank">Open in Google Maps →</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Contact Form" in sections %}
+<section id="contact">
+  <div class="container">
+    <div style="margin-bottom:3rem;" class="reveal">
+      <div class="section-eyebrow">Contact</div>
+      <h2 class="section-title">{{ contact_headline }}</h2>
+    </div>
+    <div class="contact-wrap reveal">
+      <div class="contact-left">
+        <h3>Let's talk</h3>
+        <p>{{ contact_subheadline }}</p>
+        {% if phone %}<div class="contact-detail"><div class="contact-detail-icon">📞</div><div><div class="contact-detail-label">Phone</div><div class="contact-detail-text">{{ phone }}</div></div></div>{% endif %}
+        {% if email %}<div class="contact-detail"><div class="contact-detail-icon">✉</div><div><div class="contact-detail-label">Email</div><div class="contact-detail-text">{{ email }}</div></div></div>{% endif %}
+        {% if address %}<div class="contact-detail"><div class="contact-detail-icon">📍</div><div><div class="contact-detail-label">Address</div><div class="contact-detail-text">{{ address }}</div></div></div>{% endif %}
+      </div>
+      <div class="contact-right">
+        <form action="mailto:{{ email }}" method="post" enctype="text/plain">
+          <div class="form-row-2">
+            <div class="form-group"><label>First Name</label><input type="text" name="First Name" placeholder="Jane" required /></div>
+            <div class="form-group"><label>Last Name</label><input type="text" name="Last Name" placeholder="Smith" required /></div>
+          </div>
+          <div class="form-group"><label>Email</label><input type="email" name="Email" placeholder="jane@example.com" required /></div>
+          <div class="form-group"><label>Message</label><textarea name="Message" placeholder="Tell us about your project..."></textarea></div>
+          <button type="submit" class="btn-grad" style="width:100%;padding:0.9rem;font-family:inherit;font-size:0.95rem;">Send Message →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo">{{ business_name }}</div>
+        <div class="footer-tagline">{{ footer_tagline }}</div>
+      </div>
+      <div class="footer-links-grid">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <ul>
+            {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+            {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+            {% if "Gallery" in sections %}<li><a href="#gallery">Work</a></li>{% endif %}
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            {% if phone %}<li><a href="tel:{{ phone }}">{{ phone }}</a></li>{% endif %}
+            {% if email %}<li><a href="mailto:{{ email }}">{{ email }}</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2024 {{ business_name }}. All rights reserved.</div>
+      <div class="footer-copy">Built with SiteForge</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

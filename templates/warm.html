@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ meta_description }}" />
+  <meta name="robots" content="index, follow" />
+  <title>{{ business_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:      {{ palette.primary }};
+      --primary-dark: {{ palette.primary_dark }};
+      --secondary:    {{ palette.secondary }};
+      --accent:       {{ palette.accent }};
+      --bg:           {{ palette.background }};
+      --surface:      {{ palette.surface }};
+      --text:         {{ palette.text }};
+      --text-muted:   {{ palette.text_muted }};
+      --border:       {{ palette.border }};
+      --grad-start:   {{ palette.gradient_start }};
+      --grad-end:     {{ palette.gradient_end }};
+      --hero-text:    {{ palette.hero_text }};
+      --footer-bg:    {{ palette.footer_bg }};
+      --footer-text:  {{ palette.footer_text }};
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 1.25rem; left: 50%; transform: translateX(-50%);
+      z-index: 100; width: calc(100% - 3rem); max-width: 1100px;
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 100px;
+      padding: 0 1.5rem; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .nav-logo { font-weight: 800; font-size: 1.1rem; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    .nav-links { display: flex; gap: 0; list-style: none; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.88rem; font-weight: 500; padding: 0.5rem 0.85rem;
+      border-radius: 100px; transition: all 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); background: rgba(0,0,0,0.04); }
+    .nav-cta {
+      background: var(--primary) !important; color: #fff !important;
+      padding: 0.5rem 1.25rem !important;
+    }
+    .nav-hamburger { display: none; cursor: pointer; flex-direction: column; gap: 4px; }
+    .nav-hamburger span { width: 22px; height: 2px; background: var(--text); border-radius: 2px; display: block; }
+
+    /* HERO */
+    #hero {
+      padding: 10rem 2rem 5rem;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+    .hero-bg-blob {
+      position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.25; pointer-events: none;
+    }
+    .hero-bg-blob:nth-child(1) {
+      width: 500px; height: 500px;
+      background: var(--grad-start);
+      top: 5%; left: 5%;
+    }
+    .hero-bg-blob:nth-child(2) {
+      width: 400px; height: 400px;
+      background: var(--accent);
+      bottom: 10%; right: 5%;
+    }
+    .hero-content { max-width: 700px; position: relative; z-index: 1; }
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      background: white; border: 1px solid var(--border);
+      border-radius: 100px; padding: 0.4rem 1rem 0.4rem 0.4rem;
+      font-size: 0.8rem; font-weight: 600; color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem;
+    }
+    .hero-pill-dot {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff; font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 100px; font-weight: 700;
+    }
+    h1.hero-h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800; letter-spacing: -0.03em; line-height: 1.12;
+      color: var(--text); margin-bottom: 1.25rem;
+    }
+    .hero-sub { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .btn-pill {
+      display: inline-block; padding: 0.85rem 2rem;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff; font-weight: 700; font-size: 0.95rem;
+      border-radius: 100px; text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.3s; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      font-family: inherit;
+    }
+    .btn-pill:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+    .btn-pill-outline {
+      display: inline-block; padding: 0.85rem 2rem;
+      background: white; color: var(--text); font-weight: 600; font-size: 0.95rem;
+      border-radius: 100px; text-decoration: none;
+      border: 1.5px solid var(--border); cursor: pointer; transition: all 0.3s; font-family: inherit;
+    }
+    .btn-pill-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .hero-trust {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      margin-top: 2.5rem; font-size: 0.82rem; color: var(--text-muted);
+    }
+    .trust-avatars { display: flex; }
+    .trust-avatar {
+      width: 32px; height: 32px; border-radius: 50%; border: 2px solid white;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      margin-left: -8px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: #fff; font-weight: 700;
+    }
+    .trust-avatar:first-child { margin-left: 0; }
+
+    /* SECTION */
+    section { padding: 6rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .chip {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: white; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.35rem 0.85rem; border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+    h2.sh { font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.025em; line-height: 1.12; margin-bottom: 1rem; }
+    .sp { font-size: 1rem; color: var(--text-muted); max-width: 480px; line-height: 1.7; }
+
+    /* ABOUT */
+    #about { background: var(--surface); }
+    .about-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+    .about-img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .about-img-cell {
+      border-radius: 20px; overflow: hidden;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+    }
+    .about-img-cell:nth-child(1) { aspect-ratio: 1; }
+    .about-img-cell:nth-child(2) { aspect-ratio: 1; margin-top: 1.5rem; }
+    .about-img-cell:nth-child(3) { aspect-ratio: 4/3; grid-column: span 2; }
+    .about-perks { margin-top: 2rem; display: flex; flex-direction: column; gap: 0.85rem; }
+    .perk { display: flex; align-items: center; gap: 0.75rem; font-size: 0.92rem; font-weight: 500; }
+    .perk-check {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; color: #fff;
+    }
+
+    /* SERVICES */
+    #services { background: var(--bg); }
+    .services-wrap { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .svc-card {
+      background: white; border: 1px solid var(--border);
+      border-radius: 20px; padding: 2.25rem;
+      transition: all 0.3s;
+    }
+    .svc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+    .svc-icon-wrap {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.25rem;
+    }
+    .svc-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .svc-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* TESTIMONIALS */
+    #testimonials { background: linear-gradient(135deg, var(--grad-start) 0%, var(--grad-end) 100%); }
+    #testimonials .sh, #testimonials .chip { color: white; }
+    .t-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .t-bubble {
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px; padding: 2rem;
+    }
+    .t-stars-w { font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 0.75rem; color: #FDE68A; }
+    .t-text-w { font-size: 0.88rem; color: rgba(255,255,255,0.9); line-height: 1.75; margin-bottom: 1.5rem; }
+    .t-auth { display: flex; align-items: center; gap: 0.75rem; }
+    .t-av {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.9rem; color: #fff; flex-shrink: 0;
+    }
+    .t-an { font-size: 0.9rem; font-weight: 700; color: #fff; }
+    .t-ar { font-size: 0.78rem; color: rgba(255,255,255,0.65); }
+
+    /* GALLERY */
+    #gallery { background: var(--surface); }
+    .gallery-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .gallery-row-2 { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1rem; }
+    .g-item {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; cursor: pointer; transition: transform 0.3s; aspect-ratio: 4/3;
+    }
+    .g-item:hover { transform: scale(0.98); }
+
+    /* FAQ */
+    #faq { background: var(--bg); }
+    .faq-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 880px; margin: 0 auto; }
+    .faq-pill {
+      background: white; border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem;
+    }
+    .faq-pill h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .faq-pill p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* MAP */
+    #map { background: var(--surface); }
+    .map-card {
+      border-radius: 20px; overflow: hidden; border: 1px solid var(--border);
+      height: 300px; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 0.75rem; background: var(--bg); color: var(--text-muted);
+    }
+    .map-card a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
+
+    /* CONTACT */
+    #contact { background: var(--bg); }
+    .contact-card {
+      background: white; border: 1px solid var(--border);
+      border-radius: 24px; padding: 3rem; max-width: 640px; margin: 0 auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+    }
+    .fg { margin-bottom: 1.25rem; }
+    .fg label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .fg input, .fg textarea {
+      width: 100%; padding: 0.8rem 1rem;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      font-family: inherit; font-size: 0.9rem; color: var(--text);
+      outline: none; transition: border-color 0.2s;
+      background: var(--bg);
+    }
+    .fg input:focus, .fg textarea:focus { border-color: var(--primary); }
+    .fg textarea { min-height: 110px; resize: vertical; }
+    .fg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .contact-info-row { display: flex; gap: 2rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+    .ci { text-align: center; }
+    .ci-icon { font-size: 1.4rem; margin-bottom: 0.25rem; }
+    .ci-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+    .ci-val { font-size: 0.9rem; font-weight: 600; margin-top: 0.15rem; }
+
+    /* FOOTER */
+    footer { background: var(--footer-bg); color: var(--footer-text); padding: 3rem 2rem 1.5rem; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; }
+    .footer-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem; }
+    .fl { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; color: white; }
+    .ft { font-size: 0.85rem; opacity: 0.6; margin-top: 0.25rem; }
+    .flinks { display: flex; gap: 2rem; list-style: none; flex-wrap: wrap; }
+    .flinks a { color: var(--footer-text); text-decoration: none; font-size: 0.88rem; opacity: 0.7; transition: opacity 0.2s; }
+    .flinks a:hover { opacity: 1; }
+    .fdivider { height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 1.5rem; }
+    .fbottom { display: flex; justify-content: space-between; font-size: 0.8rem; opacity: 0.45; flex-wrap: wrap; gap: 0.5rem; }
+
+    /* ANIMATIONS */
+    .appear { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .appear.shown { opacity: 1; transform: none; }
+    .appear.d1 { transition-delay: 0.1s; } .appear.d2 { transition-delay: 0.2s; } .appear.d3 { transition-delay: 0.3s; }
+
+    @media (max-width: 768px) {
+      nav { width: calc(100% - 2rem); border-radius: 16px; }
+      .about-wrap, .services-wrap, .t-grid, .faq-2col { grid-template-columns: 1fr; }
+      .gallery-row, .gallery-row-2 { grid-template-columns: 1fr 1fr; }
+      .about-img-grid { display: none; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 80px; left: 1rem; right: 1rem;
+        background: white; border-radius: 16px; padding: 1rem;
+        border: 1px solid var(--border); box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        gap: 0.25rem;
+      }
+      .nav-links.open a { border-radius: 8px; padding: 0.6rem 0.75rem; }
+      section { padding: 4rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">{{ business_name }}</a>
+  <ul class="nav-links" id="navLinks">
+    {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+    {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+    {% if "Testimonials" in sections %}<li><a href="#testimonials">Reviews</a></li>{% endif %}
+    {% if "Gallery" in sections %}<li><a href="#gallery">Gallery</a></li>{% endif %}
+    {% if "FAQ" in sections %}<li><a href="#faq">FAQ</a></li>{% endif %}
+    {% if "Contact Form" in sections or "Map" in sections %}
+    <li><a href="#contact" class="nav-cta">Contact</a></li>
+    {% endif %}
+  </ul>
+  <div class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+{% if "Hero" in sections %}
+<section id="hero">
+  <div class="hero-bg-blob"></div>
+  <div class="hero-bg-blob"></div>
+  <div class="hero-content">
+    <div class="hero-pill">
+      <span class="hero-pill-dot">New</span>
+      {{ business_name }} is here
+    </div>
+    <h1 class="hero-h1">{{ hero_headline }}</h1>
+    <p class="hero-sub">{{ hero_subheadline }}</p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-pill">{{ hero_cta }}</a>
+      {% if "About" in sections %}<a href="#about" class="btn-pill-outline">Learn More</a>{% endif %}
+    </div>
+    <div class="hero-trust">
+      <div class="trust-avatars">
+        <div class="trust-avatar">A</div>
+        <div class="trust-avatar">B</div>
+        <div class="trust-avatar">C</div>
+        <div class="trust-avatar">D</div>
+      </div>
+      <span>Trusted by hundreds of happy clients</span>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "About" in sections %}
+<section id="about">
+  <div class="container">
+    <div class="about-wrap">
+      <div class="about-img-grid appear">
+        <div class="about-img-cell">🌿</div>
+        <div class="about-img-cell">✨</div>
+        <div class="about-img-cell">🏡</div>
+      </div>
+      <div>
+        <div class="chip appear">About Us</div>
+        <h2 class="sh appear">{{ about_headline }}</h2>
+        <p class="sp appear" style="margin-bottom:1.5rem">{{ about_paragraph }}</p>
+        <div class="about-perks appear">
+          <div class="perk"><div class="perk-check">✓</div><span>{{ about_highlight_1 }}</span></div>
+          <div class="perk"><div class="perk-check">✓</div><span>{{ about_highlight_2 }}</span></div>
+          <div class="perk"><div class="perk-check">✓</div><span>{{ about_highlight_3 }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Services" in sections %}
+<section id="services">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem" class="appear">
+      <div class="chip">Services</div>
+      <h2 class="sh">{{ services_headline }}</h2>
+      <p class="sp" style="margin:0 auto">{{ services_subheadline }}</p>
+    </div>
+    <div class="services-wrap">
+      <div class="svc-card appear d1">
+        <div class="svc-icon-wrap">🌟</div>
+        <div class="svc-name">{{ service_1_name }}</div>
+        <div class="svc-desc">{{ service_1_description }}</div>
+      </div>
+      <div class="svc-card appear d2">
+        <div class="svc-icon-wrap">🎯</div>
+        <div class="svc-name">{{ service_2_name }}</div>
+        <div class="svc-desc">{{ service_2_description }}</div>
+      </div>
+      <div class="svc-card appear d3">
+        <div class="svc-icon-wrap">💡</div>
+        <div class="svc-name">{{ service_3_name }}</div>
+        <div class="svc-desc">{{ service_3_description }}</div>
+      </div>
+      <div class="svc-card appear d1">
+        <div class="svc-icon-wrap">🤝</div>
+        <div class="svc-name">{{ service_4_name }}</div>
+        <div class="svc-desc">{{ service_4_description }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Testimonials" in sections %}
+<section id="testimonials">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem" class="appear">
+      <div class="chip">Reviews</div>
+      <h2 class="sh" style="color:white">{{ testimonials_headline }}</h2>
+    </div>
+    <div class="t-grid">
+      <div class="t-bubble appear d1">
+        <div class="t-stars-w">★★★★★</div>
+        <p class="t-text-w">"{{ testimonial_1_text }}"</p>
+        <div class="t-auth"><div class="t-av">{{ testimonial_1_name[:1] }}</div><div><div class="t-an">{{ testimonial_1_name }}</div><div class="t-ar">{{ testimonial_1_role }}</div></div></div>
+      </div>
+      <div class="t-bubble appear d2">
+        <div class="t-stars-w">★★★★★</div>
+        <p class="t-text-w">"{{ testimonial_2_text }}"</p>
+        <div class="t-auth"><div class="t-av">{{ testimonial_2_name[:1] }}</div><div><div class="t-an">{{ testimonial_2_name }}</div><div class="t-ar">{{ testimonial_2_role }}</div></div></div>
+      </div>
+      <div class="t-bubble appear d3">
+        <div class="t-stars-w">★★★★★</div>
+        <p class="t-text-w">"{{ testimonial_3_text }}"</p>
+        <div class="t-auth"><div class="t-av">{{ testimonial_3_name[:1] }}</div><div><div class="t-an">{{ testimonial_3_name }}</div><div class="t-ar">{{ testimonial_3_role }}</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Gallery" in sections %}
+<section id="gallery">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem" class="appear">
+      <div class="chip">Gallery</div>
+      <h2 class="sh">Our Work</h2>
+    </div>
+    <div class="gallery-row appear">
+      <div class="g-item">🌿</div>
+      <div class="g-item">✨</div>
+      <div class="g-item">🎨</div>
+    </div>
+    <div class="gallery-row-2 appear">
+      <div class="g-item">💐</div>
+      <div class="g-item">🌸</div>
+      <div class="g-item">🏡</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "FAQ" in sections %}
+<section id="faq">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem" class="appear">
+      <div class="chip">FAQ</div>
+      <h2 class="sh">{{ faq_headline }}</h2>
+    </div>
+    <div class="faq-2col">
+      <div class="faq-pill appear d1"><h4>{{ faq_1_q }}</h4><p>{{ faq_1_a }}</p></div>
+      <div class="faq-pill appear d2"><h4>{{ faq_2_q }}</h4><p>{{ faq_2_a }}</p></div>
+      <div class="faq-pill appear d3"><h4>{{ faq_3_q }}</h4><p>{{ faq_3_a }}</p></div>
+      <div class="faq-pill appear d1"><h4>{{ faq_4_q }}</h4><p>{{ faq_4_a }}</p></div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Map" in sections %}
+<section id="map">
+  <div class="container">
+    <div style="margin-bottom:2rem" class="appear">
+      <div class="chip">Location</div>
+      <h2 class="sh">Find Us</h2>
+    </div>
+    <div class="map-card appear">
+      <div style="font-size:2.5rem">📍</div>
+      {% if address %}<div style="font-weight:600">{{ address }}</div>{% endif %}
+      {% if address %}<a href="https://maps.google.com?q={{ address | urlencode }}" target="_blank">View on Google Maps →</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Contact Form" in sections %}
+<section id="contact">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:2.5rem" class="appear">
+      <div class="chip">Contact</div>
+      <h2 class="sh">{{ contact_headline }}</h2>
+      <p class="sp" style="margin:0 auto">{{ contact_subheadline }}</p>
+    </div>
+    <div class="contact-card appear">
+      <div class="contact-info-row">
+        {% if phone %}<div class="ci"><div class="ci-icon">📞</div><div class="ci-label">Phone</div><div class="ci-val">{{ phone }}</div></div>{% endif %}
+        {% if email %}<div class="ci"><div class="ci-icon">✉</div><div class="ci-label">Email</div><div class="ci-val">{{ email }}</div></div>{% endif %}
+        {% if address %}<div class="ci"><div class="ci-icon">📍</div><div class="ci-label">Address</div><div class="ci-val">{{ address }}</div></div>{% endif %}
+      </div>
+      <form action="mailto:{{ email }}" method="post" enctype="text/plain">
+        <div class="fg-row">
+          <div class="fg"><label>First Name</label><input type="text" name="First Name" placeholder="Jane" required /></div>
+          <div class="fg"><label>Last Name</label><input type="text" name="Last Name" placeholder="Smith" required /></div>
+        </div>
+        <div class="fg"><label>Email</label><input type="email" name="Email" placeholder="jane@example.com" required /></div>
+        <div class="fg"><label>Message</label><textarea name="Message" placeholder="Hi there! I'd love to learn more..."></textarea></div>
+        <button type="submit" class="btn-pill" style="width:100%;font-size:0.95rem;text-align:center;">Send Message 💌</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div><div class="fl">{{ business_name }}</div><div class="ft">{{ footer_tagline }}</div></div>
+      <ul class="flinks">
+        {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+        {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+        {% if "Contact Form" in sections %}<li><a href="#contact">Contact</a></li>{% endif %}
+        {% if phone %}<li><a href="tel:{{ phone }}">{{ phone }}</a></li>{% endif %}
+        {% if email %}<li><a href="mailto:{{ email }}">{{ email }}</a></li>{% endif %}
+      </ul>
+    </div>
+    <div class="fdivider"></div>
+    <div class="fbottom">
+      <span>© 2024 {{ business_name }}. All rights reserved.</span>
+      <span>Built with SiteForge</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('shown'); }),
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll('.appear').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

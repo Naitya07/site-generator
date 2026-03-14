@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ meta_description }}" />
+  <meta name="robots" content="index, follow" />
+  <title>{{ business_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary:      {{ palette.primary }};
+      --primary-dark: {{ palette.primary_dark }};
+      --bg:           {{ palette.background }};
+      --surface:      {{ palette.surface }};
+      --text:         {{ palette.text }};
+      --text-muted:   {{ palette.text_muted }};
+      --border:       {{ palette.border }};
+      --grad-start:   {{ palette.gradient_start }};
+      --grad-end:     {{ palette.gradient_end }};
+      --footer-bg:    {{ palette.footer_bg }};
+      --footer-text:  {{ palette.footer_text }};
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; height: 60px;
+    }
+    .logo { font-weight: 800; font-size: 1rem; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--primary); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--primary); }
+    .nav-cta-link { background: var(--primary); color: #fff !important; padding: 0.45rem 1rem; border-radius: 6px; font-weight: 600 !important; }
+    .burger { display: none; cursor: pointer; flex-direction: column; gap: 4px; }
+    .burger span { width: 20px; height: 2px; background: var(--text); border-radius: 2px; display: block; }
+
+    #hero {
+      padding: 8rem 1.5rem 5rem; text-align: center;
+      background: linear-gradient(160deg, var(--grad-start) 0%, var(--grad-end) 100%);
+    }
+    .hero-name-tag {
+      display: inline-block; background: rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.95); font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.3rem 0.85rem; border-radius: 100px; margin-bottom: 1.25rem;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    h1.h1 {
+      font-size: clamp(2rem, 5.5vw, 3.5rem); font-weight: 800;
+      line-height: 1.12; letter-spacing: -0.03em; color: #fff;
+      margin-bottom: 1rem; max-width: 640px; margin-left: auto; margin-right: auto;
+    }
+    .hero-p { font-size: 1rem; color: rgba(255,255,255,0.8); max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; }
+    .hero-btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .hbtn {
+      display: inline-block; padding: 0.8rem 1.75rem;
+      background: #fff; color: var(--primary); font-weight: 700; font-size: 0.9rem;
+      border-radius: 8px; text-decoration: none; border: none; cursor: pointer;
+      font-family: inherit; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .hbtn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    .hbtn-o {
+      display: inline-block; padding: 0.8rem 1.75rem; background: transparent;
+      color: #fff; font-weight: 600; font-size: 0.9rem; border-radius: 8px;
+      text-decoration: none; border: 1.5px solid rgba(255,255,255,0.45);
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .hbtn-o:hover { background: rgba(255,255,255,0.1); }
+
+    section { padding: 5rem 1.5rem; }
+    .wrap { max-width: 1000px; margin: 0 auto; }
+    .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); margin-bottom: 0.6rem; }
+    h2.h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 0.75rem; }
+    .muted { color: var(--text-muted); font-size: 0.95rem; max-width: 480px; }
+    .center { text-align: center; }
+    .center .muted { margin: 0 auto; }
+
+    #about { background: var(--surface); }
+    .about-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .about-box { background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); border-radius: 16px; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+    .about-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .about-li { display: flex; gap: 0.6rem; align-items: center; font-size: 0.9rem; font-weight: 500; }
+    .about-li-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+
+    #services { background: var(--bg); }
+    .svc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-top: 3rem; }
+    .svc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; transition: all 0.25s; }
+    .svc:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.07); transform: translateY(-2px); }
+    .svc-icon { font-size: 1.75rem; margin-bottom: 0.85rem; }
+    .svc h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .svc p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; }
+
+    #testimonials { background: var(--surface); }
+    .t-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 3rem; }
+    .tc { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    .tc-stars { font-size: 0.8rem; letter-spacing: 2px; color: #F59E0B; margin-bottom: 0.75rem; }
+    .tc-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.25rem; font-style: italic; }
+    .tc-author { display: flex; align-items: center; gap: 0.6rem; }
+    .tc-av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+    .tc-name { font-size: 0.85rem; font-weight: 600; }
+    .tc-role { font-size: 0.75rem; color: var(--text-muted); }
+
+    #gallery { background: var(--bg); }
+    .g-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 3rem; }
+    .g-cell { aspect-ratio: 4/3; border-radius: 10px; background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; cursor: pointer; transition: transform 0.2s; }
+    .g-cell:hover { transform: scale(0.98); }
+
+    #faq { background: var(--surface); }
+    .faq-simple { max-width: 660px; margin: 3rem auto 0; }
+    .fi { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; background: var(--bg); }
+    .fiq { padding: 1.1rem 1.25rem; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+    .fiq-arrow { color: var(--primary); transition: transform 0.2s; font-size: 0.8rem; }
+    .fi.open .fiq-arrow { transform: rotate(180deg); }
+    .fia { padding: 0 1.25rem 1.1rem; font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; display: none; }
+    .fi.open .fia { display: block; }
+
+    #map { background: var(--bg); }
+    .map-simple { margin-top: 2rem; border: 1px solid var(--border); border-radius: 12px; height: 280px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.75rem; background: var(--surface); color: var(--text-muted); }
+    .map-simple a { color: var(--primary); text-decoration: none; font-size: 0.88rem; }
+
+    #contact { background: var(--surface); }
+    .contact-simple { max-width: 560px; margin: 0 auto; }
+    .contact-strip { display: flex; gap: 2rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+    .cs-item { text-align: center; }
+    .cs-icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .cs-lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+    .cs-val { font-size: 0.88rem; font-weight: 600; margin-top: 0.1rem; }
+    form.simple-form { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; }
+    .sf-group { margin-bottom: 1rem; }
+    .sf-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.35rem; }
+    .sf-group input, .sf-group textarea { width: 100%; padding: 0.72rem 0.9rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.2s; }
+    .sf-group input:focus, .sf-group textarea:focus { border-color: var(--primary); }
+    .sf-group textarea { min-height: 100px; resize: vertical; }
+    .sf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .sf-submit { width: 100%; padding: 0.85rem; background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); color: #fff; border: none; border-radius: 8px; font-size: 0.92rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .sf-submit:hover { filter: brightness(1.05); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+
+    footer { background: var(--footer-bg); color: var(--footer-text); padding: 2.5rem 1.5rem 1.5rem; }
+    .foot-inner { max-width: 1000px; margin: 0 auto; }
+    .foot-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1.25rem; }
+    .foot-logo { font-size: 1rem; font-weight: 800; color: #fff; }
+    .foot-tagline { font-size: 0.8rem; opacity: 0.5; margin-top: 0.2rem; }
+    .foot-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .foot-links a { color: var(--footer-text); text-decoration: none; font-size: 0.83rem; opacity: 0.65; transition: opacity 0.2s; }
+    .foot-links a:hover { opacity: 1; }
+    .foot-divider { height: 1px; background: rgba(255,255,255,0.08); margin-bottom: 1.25rem; }
+    .foot-bottom { display: flex; justify-content: space-between; font-size: 0.78rem; opacity: 0.4; flex-wrap: wrap; gap: 0.5rem; }
+
+    .in-view { opacity: 0; transform: translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .in-view.visible { opacity: 1; transform: none; }
+    .d1 { transition-delay: 0.1s; } .d2 { transition-delay: 0.2s; } .d3 { transition-delay: 0.3s; }
+
+    @media (max-width: 700px) {
+      .about-2col, .svc-grid, .t-row { grid-template-columns: 1fr; }
+      .g-grid { grid-template-columns: 1fr 1fr; }
+      .sf-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .burger { display: flex; }
+      .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">{{ business_name[:1] }}<span>{{ business_name[1:] }}</span></a>
+  <ul class="nav-links" id="navLinks">
+    {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+    {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+    {% if "Testimonials" in sections %}<li><a href="#testimonials">Reviews</a></li>{% endif %}
+    {% if "FAQ" in sections %}<li><a href="#faq">FAQ</a></li>{% endif %}
+    {% if "Gallery" in sections %}<li><a href="#gallery">Gallery</a></li>{% endif %}
+    {% if "Contact Form" in sections %}<li><a href="#contact" class="nav-cta-link">Contact</a></li>{% endif %}
+  </ul>
+  <div class="burger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></div>
+</nav>
+
+{% if "Hero" in sections %}
+<section id="hero">
+  <div class="hero-name-tag">{{ business_name }}</div>
+  <h1 class="h1">{{ hero_headline }}</h1>
+  <p class="hero-p">{{ hero_subheadline }}</p>
+  <div class="hero-btn-row">
+    <a href="#contact" class="hbtn">{{ hero_cta }}</a>
+    {% if "Services" in sections %}<a href="#services" class="hbtn-o">See Services</a>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if "About" in sections %}
+<section id="about">
+  <div class="wrap">
+    <div class="about-2col">
+      <div class="about-box in-view">🏠</div>
+      <div>
+        <div class="tag in-view">About Us</div>
+        <h2 class="h2 in-view">{{ about_headline }}</h2>
+        <p class="muted in-view">{{ about_paragraph }}</p>
+        <div class="about-list in-view">
+          <div class="about-li"><div class="about-li-dot"></div><span>{{ about_highlight_1 }}</span></div>
+          <div class="about-li"><div class="about-li-dot"></div><span>{{ about_highlight_2 }}</span></div>
+          <div class="about-li"><div class="about-li-dot"></div><span>{{ about_highlight_3 }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Services" in sections %}
+<section id="services">
+  <div class="wrap">
+    <div class="center in-view">
+      <div class="tag">Services</div>
+      <h2 class="h2">{{ services_headline }}</h2>
+      <p class="muted">{{ services_subheadline }}</p>
+    </div>
+    <div class="svc-grid">
+      <div class="svc in-view d1"><div class="svc-icon">⚡</div><h3>{{ service_1_name }}</h3><p>{{ service_1_description }}</p></div>
+      <div class="svc in-view d2"><div class="svc-icon">🎯</div><h3>{{ service_2_name }}</h3><p>{{ service_2_description }}</p></div>
+      <div class="svc in-view d3"><div class="svc-icon">🔧</div><h3>{{ service_3_name }}</h3><p>{{ service_3_description }}</p></div>
+      <div class="svc in-view d1"><div class="svc-icon">🤝</div><h3>{{ service_4_name }}</h3><p>{{ service_4_description }}</p></div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Testimonials" in sections %}
+<section id="testimonials">
+  <div class="wrap">
+    <div class="center in-view"><div class="tag">Reviews</div><h2 class="h2">{{ testimonials_headline }}</h2></div>
+    <div class="t-row">
+      <div class="tc in-view d1"><div class="tc-stars">★★★★★</div><p class="tc-text">"{{ testimonial_1_text }}"</p><div class="tc-author"><div class="tc-av">{{ testimonial_1_name[:1] }}</div><div><div class="tc-name">{{ testimonial_1_name }}</div><div class="tc-role">{{ testimonial_1_role }}</div></div></div></div>
+      <div class="tc in-view d2"><div class="tc-stars">★★★★★</div><p class="tc-text">"{{ testimonial_2_text }}"</p><div class="tc-author"><div class="tc-av">{{ testimonial_2_name[:1] }}</div><div><div class="tc-name">{{ testimonial_2_name }}</div><div class="tc-role">{{ testimonial_2_role }}</div></div></div></div>
+      <div class="tc in-view d3"><div class="tc-stars">★★★★★</div><p class="tc-text">"{{ testimonial_3_text }}"</p><div class="tc-author"><div class="tc-av">{{ testimonial_3_name[:1] }}</div><div><div class="tc-name">{{ testimonial_3_name }}</div><div class="tc-role">{{ testimonial_3_role }}</div></div></div></div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Gallery" in sections %}
+<section id="gallery">
+  <div class="wrap">
+    <div class="center in-view"><div class="tag">Gallery</div><h2 class="h2">Our Work</h2></div>
+    <div class="g-grid in-view"><div class="g-cell">📸</div><div class="g-cell">🖼</div><div class="g-cell">🎨</div><div class="g-cell">🌟</div><div class="g-cell">✨</div><div class="g-cell">💎</div></div>
+  </div>
+</section>
+{% endif %}
+
+{% if "FAQ" in sections %}
+<section id="faq">
+  <div class="wrap">
+    <div class="center in-view"><div class="tag">FAQ</div><h2 class="h2">{{ faq_headline }}</h2></div>
+    <div class="faq-simple in-view">
+      <div class="fi"><div class="fiq" onclick="toggleFi(this)">{{ faq_1_q }}<span class="fiq-arrow">▼</span></div><div class="fia">{{ faq_1_a }}</div></div>
+      <div class="fi"><div class="fiq" onclick="toggleFi(this)">{{ faq_2_q }}<span class="fiq-arrow">▼</span></div><div class="fia">{{ faq_2_a }}</div></div>
+      <div class="fi"><div class="fiq" onclick="toggleFi(this)">{{ faq_3_q }}<span class="fiq-arrow">▼</span></div><div class="fia">{{ faq_3_a }}</div></div>
+      <div class="fi"><div class="fiq" onclick="toggleFi(this)">{{ faq_4_q }}<span class="fiq-arrow">▼</span></div><div class="fia">{{ faq_4_a }}</div></div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Map" in sections %}
+<section id="map">
+  <div class="wrap">
+    <div class="in-view"><div class="tag">Location</div><h2 class="h2">Where We Are</h2></div>
+    <div class="map-simple in-view">
+      <div style="font-size:2.5rem">📍</div>
+      {% if address %}<div style="font-weight:600">{{ address }}</div>{% endif %}
+      {% if address %}<a href="https://maps.google.com?q={{ address | urlencode }}" target="_blank">Get Directions →</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if "Contact Form" in sections %}
+<section id="contact">
+  <div class="wrap">
+    <div class="center in-view" style="margin-bottom:2rem"><div class="tag">Contact</div><h2 class="h2">{{ contact_headline }}</h2><p class="muted">{{ contact_subheadline }}</p></div>
+    <div class="contact-simple">
+      {% if phone or email or address %}
+      <div class="contact-strip in-view">
+        {% if phone %}<div class="cs-item"><div class="cs-icon">📞</div><div class="cs-lbl">Phone</div><div class="cs-val">{{ phone }}</div></div>{% endif %}
+        {% if email %}<div class="cs-item"><div class="cs-icon">✉</div><div class="cs-lbl">Email</div><div class="cs-val">{{ email }}</div></div>{% endif %}
+        {% if address %}<div class="cs-item"><div class="cs-icon">📍</div><div class="cs-lbl">Address</div><div class="cs-val">{{ address }}</div></div>{% endif %}
+      </div>
+      {% endif %}
+      <form class="simple-form in-view" action="mailto:{{ email }}" method="post" enctype="text/plain">
+        <div class="sf-row">
+          <div class="sf-group"><label>First Name</label><input type="text" name="First Name" placeholder="Jane" required /></div>
+          <div class="sf-group"><label>Last Name</label><input type="text" name="Last Name" placeholder="Smith" required /></div>
+        </div>
+        <div class="sf-group"><label>Email</label><input type="email" name="Email" placeholder="jane@example.com" required /></div>
+        <div class="sf-group"><label>Message</label><textarea name="Message" placeholder="How can we help?"></textarea></div>
+        <button type="submit" class="sf-submit">Send Message →</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<footer>
+  <div class="foot-inner">
+    <div class="foot-top">
+      <div><div class="foot-logo">{{ business_name }}</div><div class="foot-tagline">{{ footer_tagline }}</div></div>
+      <div class="foot-links">
+        {% if "About" in sections %}<a href="#about">About</a>{% endif %}
+        {% if "Services" in sections %}<a href="#services">Services</a>{% endif %}
+        {% if "Contact Form" in sections %}<a href="#contact">Contact</a>{% endif %}
+        {% if phone %}<a href="tel:{{ phone }}">{{ phone }}</a>{% endif %}
+        {% if email %}<a href="mailto:{{ email }}">{{ email }}</a>{% endif %}
+      </div>
+    </div>
+    <div class="foot-divider"></div>
+    <div class="foot-bottom">
+      <span>© 2024 {{ business_name }}. All rights reserved.</span>
+      <span>Built with SiteForge</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll('.in-view').forEach(el => obs.observe(el));
+  function toggleFi(el) {
+    const item = el.closest('.fi');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.fi').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>

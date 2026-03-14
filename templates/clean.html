@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ meta_description }}" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="{{ business_name }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <meta property="og:type" content="website" />
+  <title>{{ business_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:        {{ palette.primary }};
+      --primary-dark:   {{ palette.primary_dark }};
+      --secondary:      {{ palette.secondary }};
+      --accent:         {{ palette.accent }};
+      --bg:             {{ palette.background }};
+      --surface:        {{ palette.surface }};
+      --text:           {{ palette.text }};
+      --text-muted:     {{ palette.text_muted }};
+      --border:         {{ palette.border }};
+      --grad-start:     {{ palette.gradient_start }};
+      --grad-end:       {{ palette.gradient_end }};
+      --hero-text:      {{ palette.hero_text }};
+      --nav-bg:         {{ palette.nav_bg }};
+      --nav-text:       {{ palette.nav_text }};
+      --footer-bg:      {{ palette.footer_bg }};
+      --footer-text:    {{ palette.footer_text }};
+      --radius:         12px;
+      --radius-lg:      20px;
+      --shadow-sm:      0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:      0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+      --shadow-lg:      0 20px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06);
+      --transition:     all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 16px;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: var(--transition);
+    }
+    nav.scrolled { box-shadow: var(--shadow-md); }
+    .nav-logo {
+      font-size: 1.2rem; font-weight: 700; color: var(--nav-text);
+      text-decoration: none; letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--primary); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--nav-text); text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      opacity: 0.75; transition: var(--transition);
+    }
+    .nav-links a:hover { opacity: 1; color: var(--primary); }
+    .nav-cta {
+      background: var(--primary); color: #fff !important; opacity: 1 !important;
+      padding: 0.5rem 1.25rem; border-radius: var(--radius); font-weight: 600 !important;
+    }
+    .nav-cta:hover { background: var(--primary-dark) !important; }
+    .nav-hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+    .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--nav-text); border-radius: 2px; transition: var(--transition); }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      position: relative; overflow: hidden;
+      padding: 7rem 2rem 4rem;
+    }
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    #hero::after {
+      content: '';
+      position: absolute; bottom: -2px; left: 0; right: 0; height: 80px;
+      background: var(--bg);
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+    .hero-content {
+      text-align: center; max-width: 760px; position: relative; z-index: 1;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.95);
+      padding: 0.4rem 1rem; border-radius: 100px;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero-headline {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800; line-height: 1.1;
+      color: var(--hero-text);
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 2.5rem; max-width: 540px; margin-left: auto; margin-right: auto;
+    }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-block; padding: 0.9rem 2.25rem;
+      background: #fff; color: var(--primary);
+      font-weight: 700; font-size: 1rem;
+      border-radius: var(--radius); text-decoration: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      transition: var(--transition);
+      border: none; cursor: pointer;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+    .btn-outline {
+      display: inline-block; padding: 0.9rem 2.25rem;
+      background: transparent; color: #fff;
+      font-weight: 600; font-size: 1rem;
+      border-radius: var(--radius); text-decoration: none;
+      border: 2px solid rgba(255,255,255,0.5);
+      transition: var(--transition); cursor: pointer;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.8); }
+
+    /* ── SECTIONS ── */
+    section { padding: 6rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      display: inline-block; color: var(--primary);
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .section-headline {
+      font-size: clamp(1.8rem, 4vw, 2.75rem);
+      font-weight: 800; letter-spacing: -0.025em; line-height: 1.15;
+      color: var(--text); margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1.05rem; color: var(--text-muted); max-width: 540px;
+    }
+    .section-header { margin-bottom: 3.5rem; }
+    .section-header.centered { text-align: center; }
+    .section-header.centered .section-sub { margin: 0 auto; }
+
+    /* ── ABOUT ── */
+    #about { background: var(--surface); }
+    .about-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+    }
+    .about-visual {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      border-radius: var(--radius-lg);
+      aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .about-visual-inner {
+      text-align: center; color: #fff;
+    }
+    .about-visual-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .about-visual-text { font-size: 1.1rem; font-weight: 600; opacity: 0.9; }
+    .about-highlights { margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; }
+    .highlight-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 0.95rem; font-weight: 500;
+    }
+    .highlight-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--primary); flex-shrink: 0;
+    }
+
+    /* ── SERVICES ── */
+    #services { background: var(--bg); }
+    .services-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;
+    }
+    .service-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: var(--transition);
+      position: relative; overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--grad-start), var(--grad-end));
+      transform: scaleX(0); transform-origin: left;
+      transition: var(--transition);
+    }
+    .service-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-icon {
+      width: 48px; height: 48px; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1.25rem;
+    }
+    .service-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+    .service-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ── TESTIMONIALS ── */
+    #testimonials { background: var(--surface); }
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;
+    }
+    .testimonial-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: var(--transition);
+    }
+    .testimonial-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .stars { color: #F59E0B; font-size: 0.9rem; margin-bottom: 1rem; letter-spacing: 2px; }
+    .testimonial-text {
+      font-size: 0.95rem; line-height: 1.7; color: var(--text);
+      font-style: italic; margin-bottom: 1.5rem;
+    }
+    .testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+    .author-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .author-name { font-weight: 600; font-size: 0.9rem; }
+    .author-role { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── FAQ ── */
+    #faq { background: var(--bg); }
+    .faq-list { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .faq-question {
+      padding: 1.25rem 1.5rem;
+      font-weight: 600; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.95rem; color: var(--text);
+      user-select: none;
+    }
+    .faq-question .faq-chevron {
+      font-size: 0.8rem; transition: var(--transition); color: var(--primary);
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-answer {
+      padding: 0 1.5rem 1.25rem;
+      font-size: 0.9rem; color: var(--text-muted); line-height: 1.7;
+      display: none;
+    }
+    .faq-item.open .faq-answer { display: block; }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--surface); }
+    .contact-grid {
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: start;
+    }
+    .contact-info { display: flex; flex-direction: column; gap: 1.5rem; }
+    .contact-item { display: flex; gap: 1rem; align-items: flex-start; }
+    .contact-icon {
+      width: 44px; height: 44px; border-radius: var(--radius); flex-shrink: 0;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: #fff;
+    }
+    .contact-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .contact-value { font-size: 0.95rem; color: var(--text); font-weight: 500; margin-top: 0.15rem; }
+    .contact-form {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 2.5rem;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .form-group input, .form-group textarea {
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius);
+      background: var(--surface); color: var(--text);
+      font-family: inherit; font-size: 0.9rem;
+      transition: var(--transition); outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .btn-submit {
+      width: 100%; padding: 0.9rem;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff; border: none; border-radius: var(--radius);
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: var(--transition); font-family: inherit;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+    /* ── GALLERY ── */
+    #gallery { background: var(--bg); }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .gallery-item {
+      aspect-ratio: 4/3; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; color: rgba(255,255,255,0.6);
+      transition: var(--transition); cursor: pointer;
+    }
+    .gallery-item:hover { transform: scale(1.02); box-shadow: var(--shadow-lg); }
+    .gallery-item:nth-child(2) { opacity: 0.9; }
+    .gallery-item:nth-child(3) { opacity: 0.8; }
+    .gallery-item:nth-child(4) { opacity: 0.85; }
+    .gallery-item:nth-child(5) { grid-column: span 2; }
+    .gallery-item:nth-child(6) { opacity: 0.75; }
+
+    /* ── MAP ── */
+    #map { background: var(--surface); }
+    .map-container {
+      border-radius: var(--radius-lg); overflow: hidden;
+      border: 1px solid var(--border); height: 360px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem; color: var(--text-muted);
+    }
+    .map-icon { font-size: 3rem; }
+    .map-address { font-weight: 600; color: var(--text); }
+    .map-link {
+      color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+    }
+    .map-link:hover { text-decoration: underline; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--footer-bg);
+      color: var(--footer-text);
+      padding: 3rem 2rem 2rem;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 2rem;
+    }
+    .footer-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 2rem; }
+    .footer-brand .footer-logo { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+    .footer-brand .footer-tagline { font-size: 0.88rem; opacity: 0.6; max-width: 240px; }
+    .footer-links { display: flex; gap: 3rem; flex-wrap: wrap; }
+    .footer-col h4 { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-bottom: 0.75rem; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-col a { color: var(--footer-text); text-decoration: none; font-size: 0.9rem; opacity: 0.75; transition: var(--transition); }
+    .footer-col a:hover { opacity: 1; color: #fff; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-size: 0.82rem; opacity: 0.5; }
+
+    /* ── ANIMATIONS ── */
+    .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .fade-in-delay-1 { transition-delay: 0.1s; }
+    .fade-in-delay-2 { transition-delay: 0.2s; }
+    .fade-in-delay-3 { transition-delay: 0.3s; }
+    .fade-in-delay-4 { transition-delay: 0.4s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-item:nth-child(5) { grid-column: span 1; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-links.open {
+        display: flex; flex-direction: column; gap: 0;
+        position: absolute; top: 68px; left: 0; right: 0;
+        background: var(--nav-bg); backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border); padding: 1rem 2rem;
+      }
+      .nav-links.open a { padding: 0.75rem 0; border-bottom: 1px solid var(--border); opacity: 1; }
+      .form-row { grid-template-columns: 1fr; }
+      section { padding: 4rem 1.25rem; }
+      .footer-top { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">{{ business_name[:1] }}<span>{{ business_name[1:] }}</span></a>
+  <ul class="nav-links" id="navLinks">
+    {% if "Hero" in sections %}<li><a href="#hero">Home</a></li>{% endif %}
+    {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+    {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+    {% if "Testimonials" in sections %}<li><a href="#testimonials">Reviews</a></li>{% endif %}
+    {% if "FAQ" in sections %}<li><a href="#faq">FAQ</a></li>{% endif %}
+    {% if "Gallery" in sections %}<li><a href="#gallery">Gallery</a></li>{% endif %}
+    {% if "Contact Form" in sections or "Map" in sections %}
+    <li><a href="#contact" class="nav-cta">Contact Us</a></li>
+    {% endif %}
+  </ul>
+  <div class="nav-hamburger" id="hamburger" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+{% if "Hero" in sections %}
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">{{ business_name }}</div>
+    <h1 class="hero-headline">{{ hero_headline }}</h1>
+    <p class="hero-sub">{{ hero_subheadline }}</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">{{ hero_cta }}</a>
+      {% if "Services" in sections %}
+      <a href="#services" class="btn-outline">View Services</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ABOUT -->
+{% if "About" in sections %}
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-visual fade-in">
+        <div class="about-visual-inner">
+          <div class="about-visual-icon">🏢</div>
+          <div class="about-visual-text">Est. 2024</div>
+        </div>
+      </div>
+      <div>
+        <div class="fade-in">
+          <span class="section-tag">Our Story</span>
+          <h2 class="section-headline">{{ about_headline }}</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.8;">{{ about_paragraph }}</p>
+        </div>
+        <div class="about-highlights fade-in fade-in-delay-1">
+          <div class="highlight-item"><div class="highlight-dot"></div><span>{{ about_highlight_1 }}</span></div>
+          <div class="highlight-item"><div class="highlight-dot"></div><span>{{ about_highlight_2 }}</span></div>
+          <div class="highlight-item"><div class="highlight-dot"></div><span>{{ about_highlight_3 }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- SERVICES -->
+{% if "Services" in sections %}
+<section id="services">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">What We Do</span>
+      <h2 class="section-headline">{{ services_headline }}</h2>
+      <p class="section-sub">{{ services_subheadline }}</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card fade-in fade-in-delay-1">
+        <div class="service-icon">✦</div>
+        <div class="service-name">{{ service_1_name }}</div>
+        <p class="service-desc">{{ service_1_description }}</p>
+      </div>
+      <div class="service-card fade-in fade-in-delay-2">
+        <div class="service-icon">◈</div>
+        <div class="service-name">{{ service_2_name }}</div>
+        <p class="service-desc">{{ service_2_description }}</p>
+      </div>
+      <div class="service-card fade-in fade-in-delay-3">
+        <div class="service-icon">⬡</div>
+        <div class="service-name">{{ service_3_name }}</div>
+        <p class="service-desc">{{ service_3_description }}</p>
+      </div>
+      <div class="service-card fade-in fade-in-delay-4">
+        <div class="service-icon">◉</div>
+        <div class="service-name">{{ service_4_name }}</div>
+        <p class="service-desc">{{ service_4_description }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- TESTIMONIALS -->
+{% if "Testimonials" in sections %}
+<section id="testimonials">
+  <div class="container">
+    <div class="section-header centered fade-in">
+      <span class="section-tag">Social Proof</span>
+      <h2 class="section-headline">{{ testimonials_headline }}</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card fade-in fade-in-delay-1">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"{{ testimonial_1_text }}"</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">{{ testimonial_1_name[:1] }}</div>
+          <div><div class="author-name">{{ testimonial_1_name }}</div><div class="author-role">{{ testimonial_1_role }}</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in fade-in-delay-2">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"{{ testimonial_2_text }}"</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">{{ testimonial_2_name[:1] }}</div>
+          <div><div class="author-name">{{ testimonial_2_name }}</div><div class="author-role">{{ testimonial_2_role }}</div></div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in fade-in-delay-3">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"{{ testimonial_3_text }}"</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">{{ testimonial_3_name[:1] }}</div>
+          <div><div class="author-name">{{ testimonial_3_name }}</div><div class="author-role">{{ testimonial_3_role }}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- GALLERY -->
+{% if "Gallery" in sections %}
+<section id="gallery">
+  <div class="container">
+    <div class="section-header centered fade-in">
+      <span class="section-tag">Our Work</span>
+      <h2 class="section-headline">See What We've Done</h2>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item fade-in fade-in-delay-1">📸</div>
+      <div class="gallery-item fade-in fade-in-delay-2">🖼</div>
+      <div class="gallery-item fade-in fade-in-delay-3">🎨</div>
+      <div class="gallery-item fade-in fade-in-delay-1">✨</div>
+      <div class="gallery-item fade-in fade-in-delay-2">🌟</div>
+      <div class="gallery-item fade-in fade-in-delay-3">💫</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FAQ -->
+{% if "FAQ" in sections %}
+<section id="faq">
+  <div class="container">
+    <div class="section-header centered fade-in">
+      <span class="section-tag">Questions</span>
+      <h2 class="section-headline">{{ faq_headline }}</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">{{ faq_1_q }} <span class="faq-chevron">▼</span></div>
+        <div class="faq-answer">{{ faq_1_a }}</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">{{ faq_2_q }} <span class="faq-chevron">▼</span></div>
+        <div class="faq-answer">{{ faq_2_a }}</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">{{ faq_3_q }} <span class="faq-chevron">▼</span></div>
+        <div class="faq-answer">{{ faq_3_a }}</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">{{ faq_4_q }} <span class="faq-chevron">▼</span></div>
+        <div class="faq-answer">{{ faq_4_a }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- MAP -->
+{% if "Map" in sections %}
+<section id="map">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">Find Us</span>
+      <h2 class="section-headline">Where We Are</h2>
+    </div>
+    <div class="map-container fade-in">
+      <div class="map-icon">📍</div>
+      {% if address %}<div class="map-address">{{ address }}</div>{% endif %}
+      {% if address %}
+      <a class="map-link" href="https://maps.google.com?q={{ address | urlencode }}" target="_blank" rel="noopener">
+        Open in Google Maps →
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CONTACT -->
+{% if "Contact Form" in sections %}
+<section id="contact">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">Get In Touch</span>
+      <h2 class="section-headline">{{ contact_headline }}</h2>
+      <p class="section-sub">{{ contact_subheadline }}</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info fade-in">
+        {% if phone %}
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="contact-label">Phone</div>
+            <div class="contact-value"><a href="tel:{{ phone }}" style="color:inherit;text-decoration:none;">{{ phone }}</a></div>
+          </div>
+        </div>
+        {% endif %}
+        {% if email %}
+        <div class="contact-item">
+          <div class="contact-icon">✉</div>
+          <div>
+            <div class="contact-label">Email</div>
+            <div class="contact-value"><a href="mailto:{{ email }}" style="color:inherit;text-decoration:none;">{{ email }}</a></div>
+          </div>
+        </div>
+        {% endif %}
+        {% if address %}
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-label">Address</div>
+            <div class="contact-value">{{ address }}</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <form class="contact-form fade-in fade-in-delay-1" action="mailto:{{ email }}" method="post" enctype="text/plain">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fname">First Name</label>
+            <input type="text" id="fname" name="First Name" placeholder="Jane" required />
+          </div>
+          <div class="form-group">
+            <label for="lname">Last Name</label>
+            <input type="text" id="lname" name="Last Name" placeholder="Smith" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="femail">Email Address</label>
+          <input type="email" id="femail" name="Email" placeholder="jane@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="fmsg">Message</label>
+          <textarea id="fmsg" name="Message" placeholder="Tell us about your project..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Send Message →</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">{{ business_name }}</div>
+        <div class="footer-tagline">{{ footer_tagline }}</div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <ul>
+            {% if "Hero" in sections %}<li><a href="#hero">Home</a></li>{% endif %}
+            {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+            {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            {% if phone %}<li><a href="tel:{{ phone }}">{{ phone }}</a></li>{% endif %}
+            {% if email %}<li><a href="mailto:{{ email }}">{{ email }}</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© {{ 2024 }} {{ business_name }}. All rights reserved.</div>
+      <div class="footer-copy">Built with SiteForge</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll spy
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Mobile nav
+  function toggleNav() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+
+  // Fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // FAQ accordion
+  function toggleFaq(el) {
+    const item = el.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+
+</body>
+</html>

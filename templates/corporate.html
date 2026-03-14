@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ meta_description }}" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="{{ business_name }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <title>{{ business_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:      {{ palette.primary }};
+      --primary-dark: {{ palette.primary_dark }};
+      --secondary:    {{ palette.secondary }};
+      --accent:       {{ palette.accent }};
+      --bg:           {{ palette.background }};
+      --surface:      {{ palette.surface }};
+      --text:         {{ palette.text }};
+      --text-muted:   {{ palette.text_muted }};
+      --border:       {{ palette.border }};
+      --grad-start:   {{ palette.gradient_start }};
+      --grad-end:     {{ palette.gradient_end }};
+      --footer-bg:    {{ palette.footer_bg }};
+      --footer-text:  {{ palette.footer_text }};
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; line-height: 1.6; }
+
+    /* TOP BAR */
+    .topbar {
+      background: var(--primary); color: #fff;
+      padding: 0.5rem 2rem; font-size: 0.8rem;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .topbar a { color: rgba(255,255,255,0.85); text-decoration: none; }
+    .topbar a:hover { color: #fff; }
+    .topbar-links { display: flex; gap: 1.5rem; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 72px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text);
+    }
+    .nav-logo-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 0.9rem;
+    }
+    .nav-logo-name { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; }
+    .nav-center { display: flex; gap: 0.25rem; list-style: none; }
+    .nav-center a {
+      color: var(--text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 500;
+      padding: 0.5rem 0.85rem; border-radius: 6px; transition: all 0.2s;
+    }
+    .nav-center a:hover { color: var(--primary); background: rgba(37,99,235,0.05); }
+    .nav-right { display: flex; gap: 0.75rem; align-items: center; }
+    .btn-nav-ghost {
+      padding: 0.5rem 1rem; border: 1.5px solid var(--border);
+      border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+      color: var(--text); background: none; cursor: pointer; transition: all 0.2s;
+      text-decoration: none; font-family: inherit;
+    }
+    .btn-nav-ghost:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-nav-solid {
+      padding: 0.5rem 1.25rem;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; text-decoration: none; font-family: inherit;
+    }
+    .btn-nav-solid:hover { background: var(--primary-dark); }
+    .nav-hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+    .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; }
+
+    /* HERO */
+    #hero {
+      background: linear-gradient(120deg, var(--grad-start) 0%, var(--grad-end) 100%);
+      padding: 5rem 2rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    .hero-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 4rem; align-items: center; }
+    .hero-left {}
+    .hero-breadcrumb {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;
+      font-size: 0.78rem; color: rgba(255,255,255,0.7); font-weight: 500;
+    }
+    .hero-breadcrumb .sep { opacity: 0.4; }
+    h1.hero-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+      font-weight: 800; line-height: 1.1; letter-spacing: -0.025em;
+      color: #fff; margin-bottom: 1.25rem;
+    }
+    .hero-desc { font-size: 1rem; color: rgba(255,255,255,0.8); margin-bottom: 2.5rem; line-height: 1.75; max-width: 480px; }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+    .btn-white {
+      padding: 0.85rem 2rem; background: #fff; color: var(--primary);
+      font-weight: 700; font-size: 0.95rem; border-radius: 6px;
+      text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; font-family: inherit;
+    }
+    .btn-white:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    .btn-white-outline {
+      padding: 0.85rem 2rem; background: transparent; color: #fff;
+      font-weight: 600; font-size: 0.95rem; border-radius: 6px;
+      text-decoration: none; border: 1.5px solid rgba(255,255,255,0.5); transition: all 0.2s; cursor: pointer; font-family: inherit;
+    }
+    .btn-white-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.8); }
+    .hero-metrics { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+    .metric { color: #fff; }
+    .metric-num { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; }
+    .metric-label { font-size: 0.78rem; opacity: 0.65; margin-top: 0.15rem; }
+
+    /* RIGHT PANEL */
+    .hero-panel {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 16px; padding: 2rem;
+    }
+    .panel-header { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 1.25rem; }
+    .panel-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem; border-radius: 10px;
+      background: rgba(255,255,255,0.08); margin-bottom: 0.75rem;
+    }
+    .panel-icon { font-size: 1.2rem; width: 32px; text-align: center; }
+    .panel-label { font-size: 0.82rem; color: rgba(255,255,255,0.65); }
+    .panel-val { font-size: 0.9rem; font-weight: 600; color: #fff; margin-top: 0.1rem; }
+    .panel-cta {
+      width: 100%; margin-top: 1rem; padding: 0.85rem;
+      background: #fff; color: var(--primary); border: none;
+      border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .panel-cta:hover { background: rgba(255,255,255,0.9); }
+
+    /* SECTIONS */
+    section { padding: 5rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* TRUST BAR */
+    .trust-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 2rem; }
+    .trust-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
+    .trust-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+    .trust-items { display: flex; gap: 2.5rem; flex-wrap: wrap; }
+    .trust-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+    .trust-item-icon { font-size: 1.1rem; }
+
+    /* ABOUT */
+    #about { background: var(--bg); }
+    .about-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+    .about-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    .sidebar-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    .sidebar-stat-num { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em; color: var(--primary); }
+    .sidebar-stat-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary); margin-bottom: 0.75rem; }
+    h2.sec-title { font-size: clamp(1.75rem, 3.5vw, 2.5rem); font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 1rem; }
+    .sec-sub { font-size: 0.95rem; color: var(--text-muted); line-height: 1.75; max-width: 520px; }
+    .bullets { margin-top: 1.75rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .bullet { display: flex; gap: 0.75rem; align-items: flex-start; font-size: 0.9rem; }
+    .bullet-dot { width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); color: #fff; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+
+    /* SERVICES */
+    #services { background: var(--surface); }
+    .services-table { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .service-row {
+      display: grid; grid-template-columns: 2.5rem 1fr 1fr auto;
+      align-items: center; gap: 1.5rem; padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border); transition: background 0.2s;
+    }
+    .service-row:last-child { border-bottom: none; }
+    .service-row:hover { background: var(--bg); }
+    .service-num { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+    .service-row h3 { font-size: 1rem; font-weight: 700; }
+    .service-row p { font-size: 0.85rem; color: var(--text-muted); }
+    .service-badge {
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff; font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.75rem;
+      border-radius: 100px; white-space: nowrap;
+    }
+
+    /* TESTIMONIALS */
+    #testimonials { background: var(--bg); }
+    .featured-t {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 3rem;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem;
+    }
+    .ft-item { border-right: 1px solid var(--border); padding-right: 2rem; }
+    .ft-item:last-child { border-right: none; padding-right: 0; }
+    .ft-stars { color: #F59E0B; font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 1rem; }
+    .ft-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.5rem; font-style: italic; }
+    .ft-author { display: flex; align-items: center; gap: 0.75rem; }
+    .ft-av { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .ft-name { font-weight: 700; font-size: 0.88rem; }
+    .ft-role { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* GALLERY */
+    #gallery { background: var(--surface); }
+    .gallery-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .gallery-strip-item { aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: all 0.3s; cursor: pointer; }
+    .gallery-strip-item:hover { transform: scale(0.99); opacity: 0.9; }
+
+    /* FAQ */
+    #faq { background: var(--bg); }
+    .faq-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+    .faq-left .sec-sub { margin-top: 0.75rem; }
+    .faq-accordion { display: flex; flex-direction: column; }
+    .faq-accordion-item { border-bottom: 1px solid var(--border); }
+    .faq-accordion-q {
+      padding: 1.25rem 0; display: flex; justify-content: space-between;
+      align-items: center; cursor: pointer; font-weight: 600; font-size: 0.92rem;
+      user-select: none;
+    }
+    .faq-icon { color: var(--primary); font-size: 1.2rem; transition: transform 0.2s; }
+    .faq-accordion-item.open .faq-icon { transform: rotate(45deg); }
+    .faq-accordion-a { font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; padding-bottom: 1.25rem; display: none; }
+    .faq-accordion-item.open .faq-accordion-a { display: block; }
+
+    /* MAP */
+    #map { background: var(--surface); }
+    .map-frame { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; height: 320px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; background: var(--bg); color: var(--text-muted); }
+    .map-frame a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+
+    /* CONTACT */
+    #contact { background: var(--bg); }
+    .contact-2col { display: grid; grid-template-columns: 1fr 1.4fr; gap: 4rem; align-items: start; }
+    .contact-detail-block { display: flex; flex-direction: column; gap: 1.5rem; }
+    .cdb-item { display: flex; gap: 1rem; align-items: flex-start; }
+    .cdb-icon { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, var(--grad-start), var(--grad-end)); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; flex-shrink: 0; }
+    .cdb-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+    .cdb-val { font-size: 0.92rem; font-weight: 500; margin-top: 0.15rem; }
+    .contact-form-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.03em; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 0.9rem; color: var(--text);
+      background: var(--bg); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn-submit-corp {
+      width: 100%; padding: 0.9rem;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-submit-corp:hover { filter: brightness(1.05); box-shadow: 0 6px 24px rgba(0,0,0,0.15); }
+
+    /* FOOTER */
+    footer { background: var(--footer-bg); color: var(--footer-text); }
+    .footer-main { max-width: 1100px; margin: 0 auto; padding: 3.5rem 2rem 2rem; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; }
+    .footer-brand-col {}
+    .footer-logo-corp { font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+    .footer-tagline-corp { font-size: 0.85rem; opacity: 0.5; line-height: 1.6; max-width: 200px; }
+    .footer-col h4 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: rgba(255,255,255,0.35); margin-bottom: 1rem; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .footer-col a { color: var(--footer-text); text-decoration: none; font-size: 0.85rem; opacity: 0.65; transition: opacity 0.2s; }
+    .footer-col a:hover { opacity: 1; }
+    .footer-bottom-bar { border-top: 1px solid rgba(255,255,255,0.07); padding: 1.5rem 2rem; display: flex; justify-content: space-between; max-width: none; font-size: 0.8rem; opacity: 0.4; flex-wrap: wrap; gap: 0.5rem; }
+
+    /* ANIMATIONS */
+    .slide-up { opacity: 0; transform: translateY(20px); transition: 0.6s ease; }
+    .slide-up.active { opacity: 1; transform: none; }
+    .slide-up.d1 { transition-delay: 0.1s; } .slide-up.d2 { transition-delay: 0.2s; } .slide-up.d3 { transition-delay: 0.3s; }
+
+    @media (max-width: 900px) {
+      .hero-inner, .about-layout, .contact-2col, .faq-layout { grid-template-columns: 1fr; }
+      .featured-t { grid-template-columns: 1fr; }
+      .ft-item { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; }
+      .ft-item:last-child { border-bottom: none; padding-bottom: 0; }
+      .footer-main { grid-template-columns: 1fr 1fr; }
+      .service-row { grid-template-columns: 1fr; }
+      .service-num { display: none; }
+      .service-badge { align-self: flex-start; }
+      .nav-center, .nav-right { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-center.open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 72px; left: 0; right: 0;
+        background: var(--surface); border-bottom: 1px solid var(--border);
+        padding: 1rem 2rem; gap: 0.25rem;
+      }
+      .gallery-strip { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .footer-main { grid-template-columns: 1fr; }
+      .topbar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    {% if address %}📍 {{ address }}{% endif %}
+  </div>
+  <div class="topbar-links">
+    {% if phone %}<a href="tel:{{ phone }}">📞 {{ phone }}</a>{% endif %}
+    {% if email %}<a href="mailto:{{ email }}">✉ {{ email }}</a>{% endif %}
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">{{ business_name[:2] | upper }}</div>
+    <div class="nav-logo-name">{{ business_name }}</div>
+  </a>
+  <ul class="nav-center" id="navLinks">
+    {% if "About" in sections %}<li><a href="#about">About</a></li>{% endif %}
+    {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+    {% if "Testimonials" in sections %}<li><a href="#testimonials">Testimonials</a></li>{% endif %}
+    {% if "Gallery" in sections %}<li><a href="#gallery">Portfolio</a></li>{% endif %}
+    {% if "FAQ" in sections %}<li><a href="#faq">FAQ</a></li>{% endif %}
+  </ul>
+  <div class="nav-right">
+    {% if "Map" in sections or "Contact Form" in sections %}
+    <a href="#contact" class="btn-nav-ghost">Get In Touch</a>
+    <a href="#contact" class="btn-nav-solid">Free Consultation</a>
+    {% endif %}
+  </div>
+  <div class="nav-hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+{% if "Hero" in sections %}
+<section id="hero" style="padding:5rem 2rem 4rem">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-breadcrumb">
+        <span>Home</span><span class="sep">/</span><span>{{ business_name }}</span>
+      </div>
+      <h1 class="hero-title">{{ hero_headline }}</h1>
+      <p class="hero-desc">{{ hero_subheadline }}</p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn-white">{{ hero_cta }}</a>
+        {% if "Services" in sections %}<a href="#services" class="btn-white-outline">Our Services</a>{% endif %}
+      </div>
+      <div class="hero-metrics">
+        <div class="metric"><div class="metric-num">500+</div><div class="metric-label">Clients Served</div></div>
+        <div class="metric"><div class="metric-num">10+</div><div class="metric-label">Years Active</div></div>
+        <div class="metric"><div class="metric-num">99%</div><div class="metric-label">Satisfaction</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="hero-panel">
+        <div class="panel-header">Quick Contact</div>
+        {% if phone %}
+        <div class="panel-row">
+          <div class="panel-icon">📞</div>
+          <div><div class="panel-label">Phone</div><div class="panel-val">{{ phone }}</div></div>
+        </div>
+        {% endif %}
+        {% if email %}
+        <div class="panel-row">
+          <div class="panel-icon">✉</div>
+          <div><div class="panel-label">Email</div><div class="panel-val">{{ email }}</div></div>
+        </div>
+        {% endif %}
+        {% if address %}
+        <div class="panel-row">
+          <div class="panel-icon">📍</div>
+          <div><div class="panel-label">Location</div><div class="panel-val">{{ address }}</div></div>
+        </div>
+        {% endif %}
+        <a href="#contact"><button class="panel-cta">Request a Free Consultation →</button></a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-label">Trusted by businesses across the region</div>
+    <div class="trust-items">
+      <div class="trust-item"><span class="trust-item-icon">✓</span> Licensed & Insured</div>
+      <div class="trust-item"><span class="trust-item-icon">✓</span> 5-Star Rated</div>
+      <div class="trust-item"><span class="trust-item-icon">✓</span> 10+ Years Experience</div>
+      <div class="trust-item"><span class="trust-item-icon">✓</span> Free Consultation</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+{% if "About" in sections %}
+<section id="about">
+  <div class="container">
+    <div class="about-layout">
+      <div>
+        <div class="eyebrow slide-up">About {{ business_name }}</div>
+        <h2 class="sec-title slide-up">{{ about_headline }}</h2>
+        <p class="sec-sub slide-up">{{ about_paragraph }}</p>
+        <div class="bullets slide-up">
+          <div class="bullet"><div class="bullet-dot">✓</div><span>{{ about_highlight_1 }}</span></div>
+          <div class="bullet"><div class="bullet-dot">✓</div><span>{{ about_highlight_2 }}</span></div>
+          <div class="bullet"><div class="bullet-dot">✓</div><span>{{ about_highlight_3 }}</span></div>
+        </div>
+      </div>
+      <div class="about-sidebar slide-up">
+        <div class="sidebar-stat"><div class="sidebar-stat-num">500+</div><div class="sidebar-stat-label">Happy Clients</div></div>
+        <div class="sidebar-stat"><div class="sidebar-stat-num">10+</div><div class="sidebar-stat-label">Years in Business</div></div>
+        <div class="sidebar-stat"><div class="sidebar-stat-num">100%</div><div class="sidebar-stat-label">Satisfaction Guarantee</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- SERVICES -->
+{% if "Services" in sections %}
+<section id="services">
+  <div class="container">
+    <div style="margin-bottom:2.5rem" class="slide-up">
+      <div class="eyebrow">Our Services</div>
+      <h2 class="sec-title">{{ services_headline }}</h2>
+      <p class="sec-sub">{{ services_subheadline }}</p>
+    </div>
+    <div class="services-table slide-up">
+      <div class="service-row">
+        <div class="service-num">01</div>
+        <div><h3>{{ service_1_name }}</h3></div>
+        <div><p>{{ service_1_description }}</p></div>
+        <div><span class="service-badge">Available</span></div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">02</div>
+        <div><h3>{{ service_2_name }}</h3></div>
+        <div><p>{{ service_2_description }}</p></div>
+        <div><span class="service-badge">Available</span></div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">03</div>
+        <div><h3>{{ service_3_name }}</h3></div>
+        <div><p>{{ service_3_description }}</p></div>
+        <div><span class="service-badge">Available</span></div>
+      </div>
+      <div class="service-row">
+        <div class="service-num">04</div>
+        <div><h3>{{ service_4_name }}</h3></div>
+        <div><p>{{ service_4_description }}</p></div>
+        <div><span class="service-badge">Available</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- TESTIMONIALS -->
+{% if "Testimonials" in sections %}
+<section id="testimonials">
+  <div class="container">
+    <div style="margin-bottom:2.5rem" class="slide-up">
+      <div class="eyebrow">Client Testimonials</div>
+      <h2 class="sec-title">{{ testimonials_headline }}</h2>
+    </div>
+    <div class="featured-t slide-up">
+      <div class="ft-item">
+        <div class="ft-stars">★★★★★</div>
+        <p class="ft-text">"{{ testimonial_1_text }}"</p>
+        <div class="ft-author"><div class="ft-av">{{ testimonial_1_name[:1] }}</div><div><div class="ft-name">{{ testimonial_1_name }}</div><div class="ft-role">{{ testimonial_1_role }}</div></div></div>
+      </div>
+      <div class="ft-item">
+        <div class="ft-stars">★★★★★</div>
+        <p class="ft-text">"{{ testimonial_2_text }}"</p>
+        <div class="ft-author"><div class="ft-av">{{ testimonial_2_name[:1] }}</div><div><div class="ft-name">{{ testimonial_2_name }}</div><div class="ft-role">{{ testimonial_2_role }}</div></div></div>
+      </div>
+      <div class="ft-item">
+        <div class="ft-stars">★★★★★</div>
+        <p class="ft-text">"{{ testimonial_3_text }}"</p>
+        <div class="ft-author"><div class="ft-av">{{ testimonial_3_name[:1] }}</div><div><div class="ft-name">{{ testimonial_3_name }}</div><div class="ft-role">{{ testimonial_3_role }}</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- GALLERY -->
+{% if "Gallery" in sections %}
+<section id="gallery">
+  <div class="container">
+    <div style="margin-bottom:2.5rem" class="slide-up">
+      <div class="eyebrow">Portfolio</div>
+      <h2 class="sec-title">Recent Projects</h2>
+    </div>
+    <div class="gallery-strip slide-up">
+      <div class="gallery-strip-item">🏢</div>
+      <div class="gallery-strip-item">📊</div>
+      <div class="gallery-strip-item">🤝</div>
+      <div class="gallery-strip-item">📈</div>
+      <div class="gallery-strip-item">🏆</div>
+      <div class="gallery-strip-item">💼</div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FAQ -->
+{% if "FAQ" in sections %}
+<section id="faq">
+  <div class="container">
+    <div class="faq-layout">
+      <div class="slide-up">
+        <div class="eyebrow">FAQ</div>
+        <h2 class="sec-title">{{ faq_headline }}</h2>
+        <p class="sec-sub" style="margin-top:0.75rem">Have more questions? <a href="#contact" style="color:var(--primary);text-decoration:none;font-weight:600">Contact us directly →</a></p>
+      </div>
+      <div class="faq-accordion slide-up">
+        <div class="faq-accordion-item">
+          <div class="faq-accordion-q" onclick="toggleFaqCorp(this)">{{ faq_1_q }}<span class="faq-icon">+</span></div>
+          <div class="faq-accordion-a">{{ faq_1_a }}</div>
+        </div>
+        <div class="faq-accordion-item">
+          <div class="faq-accordion-q" onclick="toggleFaqCorp(this)">{{ faq_2_q }}<span class="faq-icon">+</span></div>
+          <div class="faq-accordion-a">{{ faq_2_a }}</div>
+        </div>
+        <div class="faq-accordion-item">
+          <div class="faq-accordion-q" onclick="toggleFaqCorp(this)">{{ faq_3_q }}<span class="faq-icon">+</span></div>
+          <div class="faq-accordion-a">{{ faq_3_a }}</div>
+        </div>
+        <div class="faq-accordion-item">
+          <div class="faq-accordion-q" onclick="toggleFaqCorp(this)">{{ faq_4_q }}<span class="faq-icon">+</span></div>
+          <div class="faq-accordion-a">{{ faq_4_a }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- MAP -->
+{% if "Map" in sections %}
+<section id="map" style="padding:3rem 2rem">
+  <div class="container">
+    <div style="margin-bottom:1.5rem" class="slide-up">
+      <div class="eyebrow">Our Location</div>
+      <h2 class="sec-title">Where to Find Us</h2>
+    </div>
+    <div class="map-frame slide-up">
+      <div style="font-size:2.5rem">📍</div>
+      {% if address %}<div style="font-weight:600">{{ address }}</div>{% endif %}
+      {% if address %}<a href="https://maps.google.com?q={{ address | urlencode }}" target="_blank">Open in Google Maps →</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CONTACT -->
+{% if "Contact Form" in sections %}
+<section id="contact">
+  <div class="container">
+    <div style="margin-bottom:3rem" class="slide-up">
+      <div class="eyebrow">Contact Us</div>
+      <h2 class="sec-title">{{ contact_headline }}</h2>
+      <p class="sec-sub">{{ contact_subheadline }}</p>
+    </div>
+    <div class="contact-2col">
+      <div class="contact-detail-block slide-up">
+        {% if phone %}<div class="cdb-item"><div class="cdb-icon">📞</div><div><div class="cdb-label">Phone</div><div class="cdb-val"><a href="tel:{{ phone }}" style="color:inherit;text-decoration:none;">{{ phone }}</a></div></div></div>{% endif %}
+        {% if email %}<div class="cdb-item"><div class="cdb-icon">✉</div><div><div class="cdb-label">Email</div><div class="cdb-val"><a href="mailto:{{ email }}" style="color:inherit;text-decoration:none;">{{ email }}</a></div></div></div>{% endif %}
+        {% if address %}<div class="cdb-item"><div class="cdb-icon">📍</div><div><div class="cdb-label">Address</div><div class="cdb-val">{{ address }}</div></div></div>{% endif %}
+      </div>
+      <div class="contact-form-box slide-up d1">
+        <form action="mailto:{{ email }}" method="post" enctype="text/plain">
+          <div class="form-2col">
+            <div class="form-group"><label>First Name</label><input type="text" name="First Name" placeholder="Jane" required /></div>
+            <div class="form-group"><label>Last Name</label><input type="text" name="Last Name" placeholder="Smith" required /></div>
+          </div>
+          <div class="form-group"><label>Email Address</label><input type="email" name="Email" placeholder="jane@company.com" required /></div>
+          <div class="form-group"><label>Message</label><textarea name="Message" placeholder="Tell us about your needs..."></textarea></div>
+          <button type="submit" class="btn-submit-corp">Send Message →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-main">
+    <div class="footer-brand-col">
+      <div class="footer-logo-corp">{{ business_name }}</div>
+      <div class="footer-tagline-corp">{{ footer_tagline }}</div>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        {% if "About" in sections %}<li><a href="#about">About Us</a></li>{% endif %}
+        {% if "Services" in sections %}<li><a href="#services">Services</a></li>{% endif %}
+        {% if "Gallery" in sections %}<li><a href="#gallery">Portfolio</a></li>{% endif %}
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        {% if "FAQ" in sections %}<li><a href="#faq">FAQ</a></li>{% endif %}
+        {% if "Contact Form" in sections %}<li><a href="#contact">Contact</a></li>{% endif %}
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        {% if phone %}<li><a href="tel:{{ phone }}">{{ phone }}</a></li>{% endif %}
+        {% if email %}<li><a href="mailto:{{ email }}">{{ email }}</a></li>{% endif %}
+        {% if address %}<li><a href="#">{{ address }}</a></li>{% endif %}
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom-bar">
+    <span>© 2024 {{ business_name }}. All rights reserved.</span>
+    <span>Built with SiteForge</span>
+  </div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); }),
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll('.slide-up').forEach(el => obs.observe(el));
+
+  function toggleFaqCorp(el) {
+    const item = el.closest('.faq-accordion-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-accordion-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>
