@@ -1,1112 +1,613 @@
 """
-SiteForge — AI-Powered Website Generator
-Streamlit wizard app: business info → template → palette → AI content → preview & download
+SiteForge — Small Business Website Generator
+Streamlit wizard: business info → design → sections → AI generate → preview → download
 """
 
-import sys
-import os
+import base64
 import time
 
 import streamlit as st
-import streamlit.components.v1 as components
-
-# ---------------------------------------------------------------------------
-# Path setup — allow imports from core/
-# ---------------------------------------------------------------------------
-ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, ROOT)
 
 from core.content_gen import generate_website_content, ollama_is_available
-from core.renderer import render_site, PALETTES, TEMPLATE_NAMES, TEMPLATE_DISPLAY
 from core.exporter import build_zip
+from core.renderer import PALETTES, TEMPLATE_NAMES, render_site
 
-# ---------------------------------------------------------------------------
-# Page config (must be first Streamlit call)
-# ---------------------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# PAGE CONFIG
+# ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="SiteForge — AI Website Generator",
+    page_title="SiteForge — Website Generator",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
-# ---------------------------------------------------------------------------
-# Global CSS — dark theme matching config.toml
-# ---------------------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# GLOBAL CSS
+# ─────────────────────────────────────────────────────────────────────────────
 st.markdown(
     """
 <style>
-/* ── Import font ── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-/* ── Root overrides ── */
-html, body, [class*="css"] {
-    font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* ── Hide Streamlit chrome ── */
+html, body, [class*="css"] { font-family:'Inter',system-ui,sans-serif !important; }
 #MainMenu, footer, header { visibility: hidden; }
+.block-container { padding-top:0 !important; padding-bottom:2rem; max-width:none !important; }
+section[data-testid="stSidebar"] { display:none; }
 
-/* ── Main container padding ── */
-.block-container { padding-top: 2rem !important; padding-bottom: 4rem !important; max-width: 1100px !important; }
-
-/* ── Gradient text helper ── */
-.gradient-text {
-    background: linear-gradient(135deg, #6C63FF, #A78BFA, #EC4899);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* ── Hero section ── */
+/* ── Header ── */
 .sf-hero {
-    text-align: center;
-    padding: 4rem 2rem 3rem;
+    background: linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%);
+    border-bottom:1px solid #2D2D4E;
+    padding:2rem 3rem 1.75rem;
+    margin:-1rem -1rem 0 -1rem;
 }
-.sf-hero h1 {
-    font-size: clamp(2.8rem, 6vw, 5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1.05;
-    margin-bottom: 1.25rem;
-}
-.sf-hero p {
-    font-size: 1.2rem;
-    color: #A0A0C0;
-    max-width: 540px;
-    margin: 0 auto 2.5rem;
-    line-height: 1.7;
-}
+.sf-logo-text { font-size:1.6rem;font-weight:800;color:#F1F0FB;letter-spacing:-0.03em; }
+.sf-logo-text span { color:#6C63FF; }
+.sf-logo-sub { font-size:0.78rem;color:#6B6B8A;font-weight:500;margin-top:0.1rem; }
+.sf-badge { background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.3);color:#A78BFA;padding:0.35rem 0.85rem;border-radius:100px;font-size:0.75rem;font-weight:600; }
 
-/* ── Feature chips ── */
-.feature-chips {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 2.5rem;
-}
-.feature-chip {
-    background: rgba(108,99,255,0.12);
-    border: 1px solid rgba(108,99,255,0.25);
-    color: #A78BFA;
-    padding: 0.4rem 1rem;
-    border-radius: 100px;
-    font-size: 0.82rem;
-    font-weight: 600;
-}
+/* ── Progress ── */
+.sf-prog { padding:1.25rem 3rem;background:#0E0E1A;border-bottom:1px solid #1E1E32; }
+.sf-prog-inner { max-width:680px;margin:0 auto; }
+.sf-steps { display:flex;align-items:center;justify-content:space-between;position:relative; }
+.sf-steps::before { content:'';position:absolute;top:17px;left:17px;right:17px;height:2px;background:#2D2D4E;z-index:0; }
+.sf-step { display:flex;flex-direction:column;align-items:center;gap:0.35rem;position:relative;z-index:1; }
+.sf-step-dot { width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;border:2px solid #2D2D4E;background:#1A1A2E;color:#5A5A7A; }
+.sf-step-dot.active { background:#6C63FF;border-color:#6C63FF;color:white;box-shadow:0 0 0 4px rgba(108,99,255,0.2); }
+.sf-step-dot.done { background:#22C55E;border-color:#22C55E;color:white; }
+.sf-step-label { font-size:0.68rem;font-weight:600;color:#5A5A7A;white-space:nowrap; }
+.sf-step-label.active { color:#A78BFA; }
+.sf-step-label.done { color:#22C55E; }
 
 /* ── Cards ── */
-.sf-card {
-    background: #1A1A2E;
-    border: 1px solid #2D2D4E;
-    border-radius: 16px;
-    padding: 1.75rem;
-    margin-bottom: 1.25rem;
-    transition: all 0.2s ease;
-}
-.sf-card:hover {
-    border-color: #6C63FF;
-    box-shadow: 0 0 0 1px #6C63FF20, 0 8px 32px rgba(108,99,255,0.12);
-}
-
-/* ── Template cards ── */
-.template-card {
-    background: #1A1A2E;
-    border: 2px solid #2D2D4E;
-    border-radius: 16px;
-    padding: 1.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    height: 100%;
-    position: relative;
-    text-align: center;
-}
-.template-card.selected {
-    border-color: #6C63FF;
-    background: rgba(108,99,255,0.08);
-    box-shadow: 0 0 0 1px #6C63FF40;
-}
-.template-card:hover {
-    border-color: #6C63FF80;
-    transform: translateY(-2px);
-}
-.template-preview {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
-    display: block;
-}
-.template-name {
-    font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 0.4rem;
-    color: #E8E8F0;
-}
-.template-desc {
-    font-size: 0.8rem;
-    color: #A0A0C0;
-    line-height: 1.5;
-}
-.selected-badge {
-    position: absolute;
-    top: 0.75rem; right: 0.75rem;
-    background: #6C63FF;
-    color: white;
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 0.2rem 0.6rem;
-    border-radius: 100px;
-    letter-spacing: 0.05em;
-}
-
-/* ── Palette cards ── */
-.palette-card {
-    background: #1A1A2E;
-    border: 2px solid #2D2D4E;
-    border-radius: 12px;
-    padding: 1.25rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-}
-.palette-card.selected {
-    border-color: #6C63FF;
-    box-shadow: 0 0 0 1px #6C63FF40;
-}
-.palette-card:hover {
-    border-color: #6C63FF80;
-    transform: translateY(-2px);
-}
-.palette-swatches {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-    margin-bottom: 0.75rem;
-}
-.swatch {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.1);
-}
-.palette-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #E8E8F0;
-}
-
-/* ── Step indicator ── */
-.step-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    margin-bottom: 2.5rem;
-    padding: 0 1rem;
-}
-.step-dot {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; font-weight: 700;
-    flex-shrink: 0;
-    transition: all 0.3s;
-}
-.step-dot.active {
-    background: #6C63FF;
-    color: white;
-    box-shadow: 0 0 0 4px rgba(108,99,255,0.25);
-}
-.step-dot.done {
-    background: rgba(108,99,255,0.3);
-    color: #A78BFA;
-}
-.step-dot.inactive {
-    background: #2D2D4E;
-    color: #555580;
-}
-.step-line {
-    flex: 1;
-    height: 2px;
-    background: #2D2D4E;
-    max-width: 60px;
-}
-.step-line.done {
-    background: rgba(108,99,255,0.4);
-}
-.step-label {
-    font-size: 0.72rem;
-    color: #A0A0C0;
-    text-align: center;
-    margin-top: 0.35rem;
-}
-
-/* ── Section headings ── */
-.sf-section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #E8E8F0;
-    margin-bottom: 0.4rem;
-    letter-spacing: -0.02em;
-}
-.sf-section-sub {
-    font-size: 0.9rem;
-    color: #A0A0C0;
-    margin-bottom: 2rem;
-}
-
-/* ── Buttons ── */
-div[data-testid="stButton"] > button {
-    background: linear-gradient(135deg, #6C63FF, #8B5CF6) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    padding: 0.6rem 1.75rem !important;
-    font-size: 0.95rem !important;
-    transition: all 0.2s !important;
-    box-shadow: 0 4px 16px rgba(108,99,255,0.3) !important;
-}
-div[data-testid="stButton"] > button:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 8px 24px rgba(108,99,255,0.45) !important;
-    filter: brightness(1.08) !important;
-}
-div[data-testid="stButton"] > button[kind="secondary"] {
-    background: rgba(108,99,255,0.12) !important;
-    border: 1px solid rgba(108,99,255,0.3) !important;
-    color: #A78BFA !important;
-    box-shadow: none !important;
-}
-div[data-testid="stButton"] > button[kind="secondary"]:hover {
-    background: rgba(108,99,255,0.2) !important;
-    box-shadow: none !important;
-    filter: none !important;
-}
+.sf-card-title { font-size:1.35rem;font-weight:800;color:#F1F0FB;letter-spacing:-0.025em;margin-bottom:0.35rem; }
+.sf-card-sub { font-size:0.88rem;color:#6B6B8A;margin-bottom:1.75rem; }
 
 /* ── Info boxes ── */
-.sf-info {
-    background: rgba(108,99,255,0.08);
-    border: 1px solid rgba(108,99,255,0.2);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    color: #A78BFA;
-    font-size: 0.88rem;
-    margin-bottom: 1.25rem;
-}
-.sf-warning {
-    background: rgba(245,158,11,0.08);
-    border: 1px solid rgba(245,158,11,0.25);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    color: #FCD34D;
-    font-size: 0.88rem;
-    margin-bottom: 1.25rem;
-}
-.sf-success {
-    background: rgba(52,211,153,0.08);
-    border: 1px solid rgba(52,211,153,0.25);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    color: #6EE7B7;
-    font-size: 0.88rem;
-    margin-bottom: 1.25rem;
-}
-
-/* ── Content preview text areas ── */
-div[data-testid="stTextArea"] textarea {
-    background: #0E0E1A !important;
-    border: 1px solid #2D2D4E !important;
-    border-radius: 8px !important;
-    color: #E8E8F0 !important;
-    font-size: 0.88rem !important;
-}
-div[data-testid="stTextArea"] textarea:focus {
-    border-color: #6C63FF !important;
-    box-shadow: 0 0 0 2px rgba(108,99,255,0.2) !important;
-}
+.sf-info { background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);border-radius:10px;padding:0.9rem 1.1rem;color:#A78BFA;font-size:0.86rem;margin-bottom:1rem; }
+.sf-warn { background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:0.9rem 1.1rem;color:#FCD34D;font-size:0.86rem;margin-bottom:1rem; }
+.sf-ok   { background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:0.9rem 1.1rem;color:#4ADE80;font-size:0.86rem;margin-bottom:1rem; }
 
 /* ── Inputs ── */
-div[data-testid="stTextInput"] input,
-div[data-testid="stTextInput"] textarea {
-    background: #1A1A2E !important;
-    border: 1px solid #2D2D4E !important;
-    border-radius: 8px !important;
-    color: #E8E8F0 !important;
+.stTextInput>div>div>input,
+.stTextArea>div>div>textarea {
+    background:#0E0E1A !important;border:1.5px solid #2D2D4E !important;
+    border-radius:10px !important;color:#E8E8F0 !important;
+    font-family:'Inter',sans-serif !important;
 }
-div[data-testid="stTextInput"] input:focus {
-    border-color: #6C63FF !important;
+.stTextInput>div>div>input:focus,
+.stTextArea>div>div>textarea:focus {
+    border-color:#6C63FF !important;box-shadow:0 0 0 3px rgba(108,99,255,0.12) !important;
 }
+.stTextInput>label,.stTextArea>label { color:#A0A0C0 !important;font-size:0.84rem !important;font-weight:600 !important; }
+
+/* ── Buttons ── */
+.stButton>button {
+    background:linear-gradient(135deg,#6C63FF,#A78BFA) !important;
+    color:white !important;border:none !important;border-radius:10px !important;
+    font-weight:700 !important;font-family:'Inter',sans-serif !important;
+    font-size:0.92rem !important;padding:0.65rem 1.75rem !important;transition:all 0.2s !important;
+}
+.stButton>button:hover { filter:brightness(1.1) !important;box-shadow:0 6px 20px rgba(108,99,255,0.3) !important;transform:translateY(-1px) !important; }
+.stDownloadButton>button {
+    background:linear-gradient(135deg,#22C55E,#16A34A) !important;
+    color:white !important;border:none !important;border-radius:10px !important;
+    font-weight:700 !important;font-size:0.92rem !important;
+}
+.stDownloadButton>button:hover { filter:brightness(1.08) !important;box-shadow:0 6px 20px rgba(34,197,94,0.3) !important; }
 
 /* ── Selectbox ── */
-div[data-testid="stSelectbox"] > div > div {
-    background: #1A1A2E !important;
-    border-color: #2D2D4E !important;
-}
-
-/* ── Divider ── */
-hr {
-    border-color: #2D2D4E !important;
-    margin: 2rem 0 !important;
-}
-
-/* ── Progress bar ── */
-div[data-testid="stProgress"] > div > div {
-    background: linear-gradient(90deg, #6C63FF, #A78BFA) !important;
-}
-
-/* ── Nav buttons row ── */
-.nav-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1.5rem;
-    border-top: 1px solid #2D2D4E;
-    margin-top: 2rem;
-}
-
-/* ── Download button ── */
-div[data-testid="stDownloadButton"] > button {
-    background: linear-gradient(135deg, #059669, #10B981) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    font-size: 1rem !important;
-    padding: 0.7rem 2rem !important;
-    box-shadow: 0 4px 16px rgba(16,185,129,0.3) !important;
-}
-div[data-testid="stDownloadButton"] > button:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 8px 24px rgba(16,185,129,0.45) !important;
-    filter: brightness(1.08) !important;
-}
+.stSelectbox>div>div { background:#0E0E1A !important;border:1.5px solid #2D2D4E !important;border-radius:10px !important;color:#E8E8F0 !important; }
 
 /* ── Checkbox ── */
-div[data-testid="stCheckbox"] label {
-    color: #E8E8F0 !important;
-}
+.stCheckbox label { color:#E8E8F0 !important;font-size:0.88rem !important; }
+
+/* ── Tabs ── */
+.stTabs [data-baseweb="tab-list"] { background:#1A1A2E !important;border-radius:10px;padding:0.25rem;border:1px solid #2D2D4E; }
+.stTabs [data-baseweb="tab"] { color:#6B6B8A !important;border-radius:8px !important;font-weight:600 !important; }
+.stTabs [aria-selected="true"] { background:#6C63FF !important;color:white !important; }
+.stTabs [data-baseweb="tab-panel"] { padding-top:1.5rem !important; }
 
 /* ── Multiselect ── */
-div[data-testid="stMultiSelect"] > div {
-    background: #1A1A2E !important;
-    border-color: #2D2D4E !important;
-}
+.stMultiSelect>div>div { background:#0E0E1A !important;border:1.5px solid #2D2D4E !important;border-radius:10px !important; }
+.stMultiSelect span[data-baseweb="tag"] { background:rgba(108,99,255,0.2) !important;color:#A78BFA !important;border-radius:6px !important; }
 
-/* ── iframe border ── */
-iframe {
-    border-radius: 12px;
-    border: 1px solid #2D2D4E !important;
-}
+/* ── edit field label ── */
+.ef-label { font-size:0.75rem;font-weight:700;color:#6B6B8A;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:0.2rem; }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# ---------------------------------------------------------------------------
-# Session state initialisation
-# ---------------------------------------------------------------------------
-STEPS = ["Home", "Business Info", "Template", "Palette", "AI Content", "Preview"]
-SECTIONS_OPTIONS = ["Hero", "About", "Services", "Testimonials", "Gallery", "FAQ", "Map", "Contact Form"]
+# ─────────────────────────────────────────────────────────────────────────────
+# CONSTANTS
+# ─────────────────────────────────────────────────────────────────────────────
+PALETTE_GRADIENTS = {
+    "Modern Blue":   "linear-gradient(135deg,#2563EB,#0EA5E9)",
+    "Warm Orange":   "linear-gradient(135deg,#EA580C,#F97316)",
+    "Forest Green":  "linear-gradient(135deg,#16A34A,#059669)",
+    "Elegant Dark":  "linear-gradient(135deg,#7C3AED,#EC4899)",
+    "Clean Minimal": "linear-gradient(135deg,#111827,#374151)",
+}
 
 TEMPLATE_META = {
-    "clean": {
-        "icon": "🪴",
-        "desc": "Modern, minimal layout with soft shadows and gentle gradients. Great for most businesses.",
-    },
-    "bold": {
-        "icon": "⚡",
-        "desc": "High-contrast dark design with chunky typography and strong visual hierarchy.",
-    },
-    "warm": {
-        "icon": "🌿",
-        "desc": "Friendly, rounded design with warm gradients. Ideal for lifestyle and wellness brands.",
-    },
-    "corporate": {
-        "icon": "🏛",
-        "desc": "Formal, grid-based layout with a professional navy palette. Perfect for B2B.",
-    },
-    "starter": {
-        "icon": "✦",
-        "desc": "Ultra-minimal one-pager with maximum whitespace. Best for personal portfolios.",
-    },
+    "clean":     {"icon":"🤍","desc":"Minimal, white, lots of whitespace","bg":"linear-gradient(135deg,#F8FAFC,#E2E8F0)"},
+    "bold":      {"icon":"⚡","desc":"Dark background, large typography","bg":"linear-gradient(135deg,#0D0D1A,#1A0A2E)"},
+    "warm":      {"icon":"🧡","desc":"Soft colors, rounded, friendly","bg":"linear-gradient(135deg,#FFF7ED,#FEE2E2)"},
+    "corporate": {"icon":"🏢","desc":"Professional, structured layout","bg":"linear-gradient(135deg,#EFF6FF,#DBEAFE)"},
+    "starter":   {"icon":"🚀","desc":"Simple, effective, fastest load","bg":"linear-gradient(135deg,#F0FDF4,#DCFCE7)"},
 }
 
-CONTENT_FIELDS = [
-    ("hero_headline", "Hero Headline"),
-    ("hero_subheadline", "Hero Subheadline"),
-    ("hero_cta", "CTA Button Text"),
-    ("about_headline", "About Headline"),
-    ("about_paragraph", "About Paragraph"),
-    ("about_highlight_1", "About Highlight 1"),
-    ("about_highlight_2", "About Highlight 2"),
-    ("about_highlight_3", "About Highlight 3"),
-    ("services_headline", "Services Headline"),
-    ("services_subheadline", "Services Intro"),
-    ("service_1_name", "Service 1 Name"),
-    ("service_1_description", "Service 1 Description"),
-    ("service_2_name", "Service 2 Name"),
-    ("service_2_description", "Service 2 Description"),
-    ("service_3_name", "Service 3 Name"),
-    ("service_3_description", "Service 3 Description"),
-    ("service_4_name", "Service 4 Name"),
-    ("service_4_description", "Service 4 Description"),
-    ("testimonials_headline", "Testimonials Headline"),
-    ("testimonial_1_text", "Testimonial 1 Text"),
-    ("testimonial_1_name", "Testimonial 1 Name"),
-    ("testimonial_1_role", "Testimonial 1 Role"),
-    ("testimonial_2_text", "Testimonial 2 Text"),
-    ("testimonial_2_name", "Testimonial 2 Name"),
-    ("testimonial_2_role", "Testimonial 2 Role"),
-    ("testimonial_3_text", "Testimonial 3 Text"),
-    ("testimonial_3_name", "Testimonial 3 Name"),
-    ("testimonial_3_role", "Testimonial 3 Role"),
-    ("faq_headline", "FAQ Headline"),
-    ("faq_1_q", "FAQ 1 Question"),
-    ("faq_1_a", "FAQ 1 Answer"),
-    ("faq_2_q", "FAQ 2 Question"),
-    ("faq_2_a", "FAQ 2 Answer"),
-    ("faq_3_q", "FAQ 3 Question"),
-    ("faq_3_a", "FAQ 3 Answer"),
-    ("faq_4_q", "FAQ 4 Question"),
-    ("faq_4_a", "FAQ 4 Answer"),
-    ("contact_headline", "Contact Headline"),
-    ("contact_subheadline", "Contact Subheadline"),
-    ("footer_tagline", "Footer Tagline"),
-    ("meta_description", "SEO Meta Description"),
-]
+SECTION_OPTIONS = ["Hero","About","Services","Testimonials","Gallery","Contact Form","Map","FAQ"]
+SECTION_ICONS   = {"Hero":"🏠","About":"👋","Services":"🛠","Testimonials":"💬","Gallery":"🖼","Contact Form":"📬","Map":"📍","FAQ":"❓"}
+SECTION_DESCS   = {"Hero":"Big headline + CTA","About":"Your story & highlights","Services":"4 service cards","Testimonials":"3 client reviews","Gallery":"Photo showcase grid","Contact Form":"Name/email/message form","Map":"Location + Google Maps link","FAQ":"4 common questions"}
 
-defaults = {
-    "step": 0,
-    # Business info
-    "biz_name": "",
-    "biz_tagline": "",
-    "biz_description": "",
-    "biz_industry": "",
-    "biz_services": "",
-    "biz_email": "",
-    "biz_phone": "",
-    "biz_address": "",
-    "biz_tone": "Professional",
-    "biz_sections": ["Hero", "About", "Services", "Contact Form"],
-    # Template & palette
-    "selected_template": "clean",
-    "selected_palette": "Modern Blue",
-    # Generated content
-    "generated_content": {},
-    "edited_content": {},
-    "rendered_html": "",
-}
+TONE_OPTIONS = ["Professional","Friendly","Bold","Minimal","Luxury"]
+TONE_ICONS   = {"Professional":"👔","Friendly":"😊","Bold":"💥","Minimal":"◻","Luxury":"✨"}
 
-for k, v in defaults.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
-
-
-# ---------------------------------------------------------------------------
-# Helper: step indicator
-# ---------------------------------------------------------------------------
-def render_step_indicator(current_step: int):
-    step_labels = ["Home", "Info", "Template", "Palette", "AI", "Preview"]
-    cols = st.columns(len(step_labels) * 2 - 1)
-    for i, label in enumerate(step_labels):
-        col_idx = i * 2
-        with cols[col_idx]:
-            if i < current_step:
-                cls = "done"
-                icon = "✓"
-            elif i == current_step:
-                cls = "active"
-                icon = str(i + 1)
-            else:
-                cls = "inactive"
-                icon = str(i + 1)
-            st.markdown(
-                f'<div style="text-align:center">'
-                f'<div class="step-dot {cls}" style="margin:0 auto">{icon}</div>'
-                f'<div class="step-label">{label}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-        if i < len(step_labels) - 1:
-            line_cls = "done" if i < current_step else ""
-            with cols[col_idx + 1]:
-                st.markdown(
-                    f'<div style="display:flex;align-items:center;height:32px;">'
-                    f'<div class="step-line {line_cls}" style="width:100%"></div>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
-
-
-def go_to(step: int):
-    st.session_state.step = step
-    st.rerun()
-
-
-# ---------------------------------------------------------------------------
-# STEP 0 — HOME
-# ---------------------------------------------------------------------------
-def render_home():
-    st.markdown(
-        """
-<div class="sf-hero">
-  <h1><span class="gradient-text">SiteForge</span></h1>
-  <p>Generate a complete, professional website for your business in minutes — powered by local AI.</p>
-  <div class="feature-chips">
-    <span class="feature-chip">⚡ AI-Generated Copy</span>
-    <span class="feature-chip">🎨 5 Pro Templates</span>
-    <span class="feature-chip">🌈 5 Color Palettes</span>
-    <span class="feature-chip">📦 Download as ZIP</span>
-    <span class="feature-chip">🔒 100% Local — No API Keys</span>
-  </div>
-</div>
-""",
-        unsafe_allow_html=True,
+# ─────────────────────────────────────────────────────────────────────────────
+# SESSION STATE
+# ─────────────────────────────────────────────────────────────────────────────
+def _init():
+    defaults = dict(
+        step=1,
+        business_name="", description="", phone="", email="", address="",
+        color_scheme="Modern Blue",
+        sections=["Hero","About","Services","Contact Form"],
+        tone="Professional",
+        template="clean",
+        content=None, html=None,
     )
+    for k, v in defaults.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown(
-            """
-<div class="sf-card">
-  <div style="font-size:2rem;margin-bottom:0.75rem">📝</div>
-  <div style="font-weight:700;font-size:1rem;color:#E8E8F0;margin-bottom:0.4rem">1. Describe Your Business</div>
-  <div style="font-size:0.85rem;color:#A0A0C0;line-height:1.6">Tell SiteForge your business name, what you do, and what sections you need.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-    with col2:
-        st.markdown(
-            """
-<div class="sf-card">
-  <div style="font-size:2rem;margin-bottom:0.75rem">🎨</div>
-  <div style="font-weight:700;font-size:1rem;color:#E8E8F0;margin-bottom:0.4rem">2. Pick Your Style</div>
-  <div style="font-size:0.85rem;color:#A0A0C0;line-height:1.6">Choose from 5 professionally designed templates and 5 curated color palettes.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-    with col3:
-        st.markdown(
-            """
-<div class="sf-card">
-  <div style="font-size:2rem;margin-bottom:0.75rem">🤖</div>
-  <div style="font-weight:700;font-size:1rem;color:#E8E8F0;margin-bottom:0.4rem">3. AI Writes Your Copy</div>
-  <div style="font-size:0.85rem;color:#A0A0C0;line-height:1.6">Ollama (llama3.2) generates all your headlines, service descriptions, testimonials, and FAQs.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
+_init()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+# ─────────────────────────────────────────────────────────────────────────────
+# LAYOUT HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+def render_header():
+    st.markdown("""
+    <div class="sf-hero">
+      <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div style="display:flex;align-items:center;gap:0.85rem;">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6C63FF,#A78BFA);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">⚡</div>
+          <div>
+            <div class="sf-logo-text">Site<span>Forge</span></div>
+            <div class="sf-logo-sub">Small Business Website Generator</div>
+          </div>
+        </div>
+        <div class="sf-badge">Powered by Ollama · llama3.2</div>
+      </div>
+    </div>""", unsafe_allow_html=True)
 
-    col_a, col_b = st.columns(3)
-    with col_a:
-        st.markdown(
-            """
-<div class="sf-card">
-  <div style="font-size:2rem;margin-bottom:0.75rem">👁</div>
-  <div style="font-weight:700;font-size:1rem;color:#E8E8F0;margin-bottom:0.4rem">4. Preview Live</div>
-  <div style="font-size:0.85rem;color:#A0A0C0;line-height:1.6">See your full website rendered in a live preview inside the app.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-    with col_b:
-        st.markdown(
-            """
-<div class="sf-card">
-  <div style="font-size:2rem;margin-bottom:0.75rem">📦</div>
-  <div style="font-weight:700;font-size:1rem;color:#E8E8F0;margin-bottom:0.4rem">5. Download & Deploy</div>
-  <div style="font-size:0.85rem;color:#A0A0C0;line-height:1.6">Download as a ZIP with index.html, style.css, and a GitHub Pages deploy script.</div>
-</div>
-""",
-            unsafe_allow_html=True,
-        )
 
-    st.markdown("<br>", unsafe_allow_html=True)
+def render_progress(current: int):
+    labels = ["About","Design","Sections","Generate","Download"]
+    dots = ""
+    for i, label in enumerate(labels, 1):
+        if i < current:   cls = "done";   mark = "✓"
+        elif i == current: cls = "active"; mark = str(i)
+        else:              cls = "";       mark = str(i)
+        dots += f"""<div class="sf-step">
+          <div class="sf-step-dot {cls}">{mark}</div>
+          <div class="sf-step-label {cls}">{label}</div>
+        </div>"""
+    st.markdown(f"""<div class="sf-prog"><div class="sf-prog-inner"><div class="sf-steps">{dots}</div></div></div>""",
+                unsafe_allow_html=True)
 
-    # Ollama status
-    ollama_ok = ollama_is_available()
-    if ollama_ok:
-        st.markdown(
-            '<div class="sf-success">✓ Ollama is running — AI content generation is ready.</div>',
-            unsafe_allow_html=True,
-        )
+
+def card_header(title: str, sub: str = ""):
+    st.markdown(f'<div class="sf-card-title">{title}</div><div class="sf-card-sub">{sub}</div>', unsafe_allow_html=True)
+
+
+def info(msg):  st.markdown(f'<div class="sf-info">{msg}</div>', unsafe_allow_html=True)
+def warn(msg):  st.markdown(f'<div class="sf-warn">{msg}</div>', unsafe_allow_html=True)
+def ok(msg):    st.markdown(f'<div class="sf-ok">{msg}</div>', unsafe_allow_html=True)
+
+
+def mini_card(label, value):
+    return f"""<div style="background:#1A1A2E;border:1px solid #2D2D4E;border-radius:12px;padding:1.1rem;">
+      <div style="font-size:0.68rem;font-weight:700;color:#6B6B8A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">{label}</div>
+      <div style="font-size:0.95rem;font-weight:700;color:#E8E8F0;">{value}</div>
+    </div>"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 1 — Business Info
+# ─────────────────────────────────────────────────────────────────────────────
+def step_1():
+    card_header("Tell us about your business",
+                "We'll use this to generate all website copy — headlines, descriptions, CTAs.")
+
+    st.session_state.business_name = st.text_input(
+        "Business Name *", value=st.session_state.business_name,
+        placeholder="e.g. Maple Street Bakery")
+
+    st.session_state.description = st.text_area(
+        "What does your business do? *", value=st.session_state.description,
+        placeholder="e.g. We bake artisan breads, pastries, and custom cakes using locally sourced ingredients.",
+        height=90)
+
+    st.markdown("**Contact Information** *(optional but recommended)*")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.session_state.phone = st.text_input("Phone", value=st.session_state.phone, placeholder="+1 (555) 123-4567")
+        st.session_state.email = st.text_input("Email", value=st.session_state.email, placeholder="hello@yourbusiness.com")
+    with c2:
+        st.session_state.address = st.text_input("Address", value=st.session_state.address, placeholder="123 Main St, Toronto, ON")
+
+    st.markdown("---")
+    if not st.session_state.business_name or not st.session_state.description:
+        warn("Please fill in your business name and a short description to continue.")
     else:
-        st.markdown(
-            '<div class="sf-warning">⚠ Ollama is not running. Start it with <code>ollama serve</code> before generating AI content. You can still build manually.</div>',
-            unsafe_allow_html=True,
-        )
-
-    _, col_btn, _ = st.columns([1, 1, 1])
-    with col_btn:
-        if st.button("Start Building →", use_container_width=True):
-            go_to(1)
+        info(f"Great! We'll generate a website for <strong>{st.session_state.business_name}</strong>.")
+        _, _, col = st.columns([1, 3, 1])
+        with col:
+            if st.button("Continue →", key="s1_next"):
+                st.session_state.step = 2
+                st.rerun()
 
 
-# ---------------------------------------------------------------------------
-# STEP 1 — BUSINESS INFO
-# ---------------------------------------------------------------------------
-def render_business_info():
-    st.markdown('<div class="sf-section-title">Tell us about your business</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="sf-section-sub">Fill in what you know — the AI will fill in the gaps. Only the business name is required.</div>',
-        unsafe_allow_html=True,
-    )
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 2 — Design
+# ─────────────────────────────────────────────────────────────────────────────
+def step_2():
+    card_header("Choose your design",
+                "Pick a color palette, template layout, and tone that matches your brand.")
 
-    with st.form("biz_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            name = st.text_input("Business Name *", value=st.session_state.biz_name, placeholder="e.g. Peak Plumbing Co.")
-            tagline = st.text_input("Tagline", value=st.session_state.biz_tagline, placeholder="e.g. Trusted pipes, on time")
-            industry = st.text_input("Industry", value=st.session_state.biz_industry, placeholder="e.g. Home Services, Retail, Consulting")
-            email = st.text_input("Contact Email", value=st.session_state.biz_email, placeholder="hello@example.com")
-        with col2:
-            description = st.text_area(
-                "What does your business do?",
-                value=st.session_state.biz_description,
-                placeholder="Describe what you offer, who you serve, and what makes you different...",
-                height=120,
-            )
-            services_raw = st.text_input(
-                "Main Services / Products (comma-separated)",
-                value=st.session_state.biz_services,
-                placeholder="e.g. Emergency plumbing, Pipe installation, Drain cleaning",
-            )
-            phone = st.text_input("Phone", value=st.session_state.biz_phone, placeholder="+1 (555) 000-0000")
-            address = st.text_input("Address", value=st.session_state.biz_address, placeholder="123 Main St, City, State")
+    # ── Palette ──
+    st.markdown("#### 🎨 Color Palette")
+    cols = st.columns(5)
+    for i, (name, grad) in enumerate(PALETTE_GRADIENTS.items()):
+        with cols[i]:
+            sel = name == st.session_state.color_scheme
+            border = "2px solid #6C63FF" if sel else "2px solid #2D2D4E"
+            shadow = "box-shadow:0 0 0 3px rgba(108,99,255,0.2);" if sel else ""
+            mark = "✓ " if sel else ""
+            st.markdown(f"""
+            <div style="border-radius:12px;overflow:hidden;border:{border};{shadow}">
+              <div style="height:52px;background:{grad}"></div>
+              <div style="background:#1A1A2E;padding:0.5rem;text-align:center;font-size:0.71rem;font-weight:600;color:#A0A0C0;">{mark}{name}</div>
+            </div>""", unsafe_allow_html=True)
+            if st.button(name, key=f"p_{name}", use_container_width=True):
+                st.session_state.color_scheme = name
+                st.rerun()
 
-        st.markdown("---")
-        col3, col4 = st.columns(2)
-        with col3:
-            tone = st.selectbox(
-                "Tone / Voice",
-                ["Professional", "Friendly", "Playful", "Luxury", "Technical"],
-                index=["Professional", "Friendly", "Playful", "Luxury", "Technical"].index(
-                    st.session_state.biz_tone
-                ),
-            )
-        with col4:
-            sections = st.multiselect(
-                "Sections to include",
-                SECTIONS_OPTIONS,
-                default=st.session_state.biz_sections,
-            )
+    st.markdown("---")
 
-        submitted = st.form_submit_button("Save & Continue →", use_container_width=True)
-
-    if submitted:
-        if not name.strip():
-            st.error("Business name is required.")
-            return
-        st.session_state.biz_name = name.strip()
-        st.session_state.biz_tagline = tagline.strip()
-        st.session_state.biz_description = description.strip()
-        st.session_state.biz_industry = industry.strip()
-        st.session_state.biz_services = services_raw.strip()
-        st.session_state.biz_email = email.strip()
-        st.session_state.biz_phone = phone.strip()
-        st.session_state.biz_address = address.strip()
-        st.session_state.biz_tone = tone
-        st.session_state.biz_sections = sections if sections else ["Hero", "About", "Services", "Contact Form"]
-        go_to(2)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("← Back to Home", key="back_home"):
-        go_to(0)
-
-
-# ---------------------------------------------------------------------------
-# STEP 2 — CHOOSE TEMPLATE
-# ---------------------------------------------------------------------------
-def render_template_picker():
-    st.markdown('<div class="sf-section-title">Choose your template</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="sf-section-sub">Each template is a fully responsive Jinja2 layout — pick the style that fits your brand.</div>',
-        unsafe_allow_html=True,
-    )
-
-    cols = st.columns(len(TEMPLATE_NAMES))
+    # ── Template ──
+    st.markdown("#### 🖼 Template Style")
+    tcols = st.columns(5)
     for i, tname in enumerate(TEMPLATE_NAMES):
         meta = TEMPLATE_META[tname]
-        is_selected = st.session_state.selected_template == tname
-        badge = '<span class="selected-badge">SELECTED</span>' if is_selected else ""
-        with cols[i]:
-            st.markdown(
-                f"""
-<div class="template-card {'selected' if is_selected else ''}">
-  {badge}
-  <span class="template-preview">{meta['icon']}</span>
-  <div class="template-name">{TEMPLATE_DISPLAY[tname]}</div>
-  <div class="template-desc">{meta['desc']}</div>
-</div>
-""",
-                unsafe_allow_html=True,
-            )
-            if st.button(
-                f"Select {TEMPLATE_DISPLAY[tname]}",
-                key=f"sel_tpl_{tname}",
-                use_container_width=True,
-            ):
-                st.session_state.selected_template = tname
+        with tcols[i]:
+            sel = tname == st.session_state.template
+            border = "2px solid #6C63FF" if sel else "2px solid #2D2D4E"
+            shadow = "box-shadow:0 0 0 3px rgba(108,99,255,0.2);" if sel else ""
+            mark = "✓ " if sel else ""
+            st.markdown(f"""
+            <div style="border-radius:14px;overflow:hidden;border:{border};{shadow}background:#0E0E1A;">
+              <div style="height:100px;background:{meta['bg']};display:flex;align-items:center;justify-content:center;font-size:2.5rem;">{meta['icon']}</div>
+              <div style="padding:0.85rem;">
+                <div style="font-size:0.88rem;font-weight:700;color:#E8E8F0;">{mark}{tname.capitalize()}</div>
+                <div style="font-size:0.7rem;color:#6B6B8A;margin-top:0.2rem;">{meta['desc']}</div>
+              </div>
+            </div>""", unsafe_allow_html=True)
+            if st.button(f"Select {tname.capitalize()}", key=f"t_{tname}", use_container_width=True):
+                st.session_state.template = tname
                 st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("---")
 
-    col_back, col_next = st.columns([1, 1])
-    with col_back:
-        if st.button("← Back", key="back_tpl"):
-            go_to(1)
-    with col_next:
-        if st.button("Continue →", key="next_tpl", use_container_width=True):
-            go_to(3)
-
-
-# ---------------------------------------------------------------------------
-# STEP 3 — CHOOSE PALETTE
-# ---------------------------------------------------------------------------
-def render_palette_picker():
-    st.markdown('<div class="sf-section-title">Choose your color palette</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="sf-section-sub">All colors are applied via CSS variables — you can always regenerate with a different palette.</div>',
-        unsafe_allow_html=True,
-    )
-
-    palette_names = list(PALETTES.keys())
-    cols = st.columns(len(palette_names))
-
-    for i, pname in enumerate(palette_names):
-        p = PALETTES[pname]
-        is_selected = st.session_state.selected_palette == pname
-        with cols[i]:
-            swatches = "".join(
-                [
-                    f'<div class="swatch" style="background:{p[k]}"></div>'
-                    for k in ["primary", "secondary", "accent", "background", "footer_bg"]
-                ]
-            )
-            st.markdown(
-                f"""
-<div class="palette-card {'selected' if is_selected else ''}">
-  <div class="palette-swatches">{swatches}</div>
-  <div class="palette-name">{pname}</div>
-</div>
-""",
-                unsafe_allow_html=True,
-            )
-            if st.button(
-                "Select" if not is_selected else "✓ Selected",
-                key=f"sel_pal_{i}",
-                use_container_width=True,
-            ):
-                st.session_state.selected_palette = pname
+    # ── Tone ──
+    st.markdown("#### 💬 Brand Tone")
+    tonecols = st.columns(5)
+    for i, tone in enumerate(TONE_OPTIONS):
+        with tonecols[i]:
+            sel = tone == st.session_state.tone
+            border = "2px solid #6C63FF" if sel else "2px solid #2D2D4E"
+            bg = "rgba(108,99,255,0.12)" if sel else "#1A1A2E"
+            st.markdown(f"""
+            <div style="border-radius:12px;padding:1rem;border:{border};background:{bg};text-align:center;">
+              <div style="font-size:1.8rem;margin-bottom:0.3rem;">{TONE_ICONS.get(tone,'')}</div>
+              <div style="font-size:0.85rem;font-weight:700;color:#E8E8F0;">{'✓ ' if sel else ''}{tone}</div>
+            </div>""", unsafe_allow_html=True)
+            if st.button(tone, key=f"tone_{tone}", use_container_width=True):
+                st.session_state.tone = tone
                 st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    col_back, col_next = st.columns([1, 1])
-    with col_back:
-        if st.button("← Back", key="back_pal"):
-            go_to(2)
-    with col_next:
-        if st.button("Continue →", key="next_pal", use_container_width=True):
-            go_to(4)
+    st.markdown("---")
+    ca, _, cc = st.columns([1, 3, 1])
+    with ca:
+        if st.button("← Back", key="s2_back"): st.session_state.step = 1; st.rerun()
+    with cc:
+        if st.button("Continue →", key="s2_next"): st.session_state.step = 3; st.rerun()
 
 
-# ---------------------------------------------------------------------------
-# STEP 4 — AI CONTENT GENERATION
-# ---------------------------------------------------------------------------
-def render_ai_content():
-    st.markdown('<div class="sf-section-title">Generate AI content</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="sf-section-sub">Ollama (llama3.2) will write all your website copy. Edit any field before continuing.</div>',
-        unsafe_allow_html=True,
-    )
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 3 — Sections
+# ─────────────────────────────────────────────────────────────────────────────
+def step_3():
+    card_header("Choose your sections",
+                "Select which sections appear on your website. Tip: Hero + Services + Contact is a great combo.")
 
-    # Build business_info dict
-    services_list = [
-        s.strip() for s in st.session_state.biz_services.split(",") if s.strip()
-    ] or ["Consultation", "Planning", "Execution", "Support"]
+    selected = list(st.session_state.sections)
+    cols = st.columns(4)
+    for i, sec in enumerate(SECTION_OPTIONS):
+        with cols[i % 4]:
+            checked = sec in selected
+            border = "2px solid #6C63FF" if checked else "2px solid #2D2D4E"
+            bg = "rgba(108,99,255,0.08)" if checked else "#1A1A2E"
+            mark = "✓" if checked else ""
+            st.markdown(f"""
+            <div style="border-radius:12px;padding:1rem;border:{border};background:{bg};margin-bottom:0.5rem;">
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+                <span style="font-size:1.1rem;">{SECTION_ICONS.get(sec,'')}</span>
+                <span style="font-size:0.88rem;font-weight:700;color:#E8E8F0;">{sec}</span>
+                <span style="margin-left:auto;color:#6C63FF;font-weight:700;">{mark}</span>
+              </div>
+              <div style="font-size:0.7rem;color:#6B6B8A;">{SECTION_DESCS.get(sec,'')}</div>
+            </div>""", unsafe_allow_html=True)
+            label = f"{'Remove' if checked else 'Add'} {sec}"
+            if st.button(label, key=f"sec_{sec}", use_container_width=True):
+                if checked: selected.remove(sec)
+                else:       selected.append(sec)
+                st.session_state.sections = selected
+                st.rerun()
 
-    business_info = {
-        "name": st.session_state.biz_name or "My Business",
-        "description": st.session_state.biz_description,
-        "phone": st.session_state.biz_phone,
-        "email": st.session_state.biz_email,
-        "address": st.session_state.biz_address,
-        "tone": st.session_state.biz_tone,
-        "sections": st.session_state.biz_sections,
-        "color_scheme": st.session_state.selected_palette,
-        "services": services_list,
-    }
+    st.markdown("---")
+    if not selected:
+        warn("Select at least one section.")
+    else:
+        info(f"Selected: <strong>{', '.join(selected)}</strong> — {len(selected)} section(s)")
 
-    # Generate button
-    ollama_ok = ollama_is_available()
-    if not ollama_ok:
-        st.markdown(
-            '<div class="sf-warning">⚠ Ollama is not reachable. Run <code>ollama serve</code> in a terminal, then click Generate. Or skip to use default placeholder content.</div>',
-            unsafe_allow_html=True,
-        )
-
-    col_gen, col_skip = st.columns([2, 1])
-    with col_gen:
-        gen_btn = st.button(
-            "Generate with AI (llama3.2)",
-            use_container_width=True,
-            disabled=not ollama_ok,
-        )
-    with col_skip:
-        skip_btn = st.button("Use Default Content", use_container_width=True)
-
-    if gen_btn:
-        progress = st.progress(0, text="Connecting to Ollama...")
-        try:
-            progress.progress(20, text="Crafting your copy with llama3.2...")
-            content = generate_website_content(business_info)
-            progress.progress(90, text="Finalising...")
-            time.sleep(0.3)
-            progress.progress(100, text="Done!")
-            st.session_state.generated_content = content
-            st.session_state.edited_content = dict(content)
-            st.markdown(
-                '<div class="sf-success">✓ Content generated! Review and edit below.</div>',
-                unsafe_allow_html=True,
-            )
-        except RuntimeError as e:
-            progress.empty()
-            st.error(f"Generation failed: {e}")
-            return
-
-    if skip_btn:
-        from core.content_gen import _default_content
-        content = _default_content(
-            business_info["name"], business_info["description"], business_info
-        )
-        content["color_scheme"] = st.session_state.selected_palette
-        st.session_state.generated_content = content
-        st.session_state.edited_content = dict(content)
-        st.markdown(
-            '<div class="sf-info">ℹ Using default placeholder content. You can still edit all fields below.</div>',
-            unsafe_allow_html=True,
-        )
-
-    # Editable fields
-    if st.session_state.edited_content:
-        st.markdown("---")
-        st.markdown(
-            '<div style="font-weight:600;color:#A78BFA;margin-bottom:1rem">Edit generated content</div>',
-            unsafe_allow_html=True,
-        )
-
-        # Group into expanders for cleaner UI
-        groups = {
-            "Hero": ["hero_headline", "hero_subheadline", "hero_cta"],
-            "About": ["about_headline", "about_paragraph", "about_highlight_1", "about_highlight_2", "about_highlight_3"],
-            "Services": [
-                "services_headline", "services_subheadline",
-                "service_1_name", "service_1_description",
-                "service_2_name", "service_2_description",
-                "service_3_name", "service_3_description",
-                "service_4_name", "service_4_description",
-            ],
-            "Testimonials": [
-                "testimonials_headline",
-                "testimonial_1_text", "testimonial_1_name", "testimonial_1_role",
-                "testimonial_2_text", "testimonial_2_name", "testimonial_2_role",
-                "testimonial_3_text", "testimonial_3_name", "testimonial_3_role",
-            ],
-            "FAQ": [
-                "faq_headline",
-                "faq_1_q", "faq_1_a", "faq_2_q", "faq_2_a",
-                "faq_3_q", "faq_3_a", "faq_4_q", "faq_4_a",
-            ],
-            "Contact & Footer": ["contact_headline", "contact_subheadline", "footer_tagline", "meta_description"],
-        }
-
-        field_label_map = dict(CONTENT_FIELDS)
-
-        for group_name, fields in groups.items():
-            relevant = [f for f in fields if f in st.session_state.edited_content]
-            if not relevant:
-                continue
-            with st.expander(f"{group_name}", expanded=(group_name == "Hero")):
-                for field in relevant:
-                    label = field_label_map.get(field, field)
-                    current = st.session_state.edited_content.get(field, "")
-                    is_long = len(current) > 80 or "paragraph" in field or "description" in field or "_a" in field or "text" in field
-                    if is_long:
-                        new_val = st.text_area(label, value=current, key=f"edit_{field}", height=90)
-                    else:
-                        new_val = st.text_input(label, value=current, key=f"edit_{field}")
-                    st.session_state.edited_content[field] = new_val
-
-    # Navigation
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_back, col_next = st.columns([1, 1])
-    with col_back:
-        if st.button("← Back", key="back_ai"):
-            go_to(3)
-    with col_next:
-        can_continue = bool(st.session_state.edited_content)
-        if st.button("Preview Website →", key="next_ai", use_container_width=True, disabled=not can_continue):
-            # Merge edited content with non-editable fields
-            final = dict(st.session_state.edited_content)
-            final["business_name"] = st.session_state.biz_name or "My Business"
-            final["phone"] = st.session_state.biz_phone
-            final["email"] = st.session_state.biz_email
-            final["address"] = st.session_state.biz_address
-            final["sections"] = st.session_state.biz_sections
-            final["color_scheme"] = st.session_state.selected_palette
-            final["tone"] = st.session_state.biz_tone
-
-            with st.spinner("Rendering your website..."):
-                try:
-                    html = render_site(st.session_state.selected_template, final)
-                    st.session_state.rendered_html = html
-                    st.session_state.edited_content = final
-                    go_to(5)
-                except Exception as e:
-                    st.error(f"Render error: {e}")
+    ca, _, cc = st.columns([1, 3, 1])
+    with ca:
+        if st.button("← Back", key="s3_back"): st.session_state.step = 2; st.rerun()
+    with cc:
+        if selected:
+            if st.button("Generate Website →", key="s3_next"): st.session_state.step = 4; st.rerun()
 
 
-# ---------------------------------------------------------------------------
-# STEP 5 — PREVIEW & DOWNLOAD
-# ---------------------------------------------------------------------------
-def render_preview():
-    st.markdown('<div class="sf-section-title">Preview & Download</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="sf-section-sub">Your website is ready. Preview it below, then download the ZIP to deploy anywhere.</div>',
-        unsafe_allow_html=True,
-    )
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 4 — Generate
+# ─────────────────────────────────────────────────────────────────────────────
+def step_4():
+    card_header("Generating your website",
+                "The AI is crafting personalized content for every section. Usually takes 20-40 seconds.")
 
-    if not st.session_state.rendered_html:
-        st.warning("No rendered site found. Go back and generate content first.")
-        if st.button("← Back to AI Content"):
-            go_to(4)
+    if st.session_state.content is not None:
+        st.session_state.step = 5
+        st.rerun()
         return
 
-    # Re-render button (if user went back and edited)
-    col_re, col_dl = st.columns([1, 1])
-    with col_re:
-        if st.button("Re-render with current content", key="rerender"):
-            final = dict(st.session_state.edited_content)
-            final["business_name"] = st.session_state.biz_name or "My Business"
-            final["phone"] = st.session_state.biz_phone
-            final["email"] = st.session_state.biz_email
-            final["address"] = st.session_state.biz_address
-            final["sections"] = st.session_state.biz_sections
-            final["color_scheme"] = st.session_state.selected_palette
-            final["tone"] = st.session_state.biz_tone
-            try:
-                html = render_site(st.session_state.selected_template, final)
-                st.session_state.rendered_html = html
-                st.rerun()
-            except Exception as e:
-                st.error(f"Render error: {e}")
+    if not ollama_is_available():
+        st.error("**Ollama is not running.**\n\nStart it: `ollama serve`\nThen pull the model: `ollama pull llama3.2`")
+        if st.button("← Back"): st.session_state.step = 3; st.rerun()
+        return
 
-    with col_dl:
-        zip_bytes = build_zip(
-            st.session_state.rendered_html,
-            st.session_state.biz_name or "website",
-        )
-        biz_slug = (
-            (st.session_state.biz_name or "website")
-            .lower()
-            .replace(" ", "-")
-            .replace("'", "")[:30]
-        )
-        st.download_button(
-            label="Download ZIP",
-            data=zip_bytes,
-            file_name=f"{biz_slug}-website.zip",
-            mime="application/zip",
-            use_container_width=True,
-        )
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Live preview
-    st.markdown(
-        '<div style="font-weight:600;color:#A78BFA;font-size:0.9rem;margin-bottom:0.75rem;letter-spacing:0.05em;text-transform:uppercase">Live Preview</div>',
-        unsafe_allow_html=True,
-    )
-    components.html(st.session_state.rendered_html, height=620, scrolling=True)
-
-    # Summary card
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown(
-        f"""
-<div class="sf-card">
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;text-align:center">
-    <div>
-      <div style="font-size:1.5rem;margin-bottom:0.25rem">🏢</div>
-      <div style="font-size:0.72rem;color:#A0A0C0;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem">Business</div>
-      <div style="font-weight:600;font-size:0.88rem">{st.session_state.biz_name or "—"}</div>
-    </div>
-    <div>
-      <div style="font-size:1.5rem;margin-bottom:0.25rem">{TEMPLATE_META[st.session_state.selected_template]['icon']}</div>
-      <div style="font-size:0.72rem;color:#A0A0C0;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem">Template</div>
-      <div style="font-weight:600;font-size:0.88rem">{TEMPLATE_DISPLAY[st.session_state.selected_template]}</div>
-    </div>
-    <div>
-      <div style="font-size:1.5rem;margin-bottom:0.25rem">🎨</div>
-      <div style="font-size:0.72rem;color:#A0A0C0;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem">Palette</div>
-      <div style="font-weight:600;font-size:0.88rem">{st.session_state.selected_palette}</div>
-    </div>
-    <div>
-      <div style="font-size:1.5rem;margin-bottom:0.25rem">📄</div>
-      <div style="font-size:0.72rem;color:#A0A0C0;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem">Sections</div>
-      <div style="font-weight:600;font-size:0.88rem">{len(st.session_state.biz_sections)} sections</div>
-    </div>
-  </div>
-</div>
-""",
-        unsafe_allow_html=True,
+    biz = dict(
+        name=st.session_state.business_name,
+        description=st.session_state.description,
+        phone=st.session_state.phone,
+        email=st.session_state.email,
+        address=st.session_state.address,
+        color_scheme=st.session_state.color_scheme,
+        sections=st.session_state.sections,
+        tone=st.session_state.tone,
     )
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_back, col_restart = st.columns([1, 1])
-    with col_back:
-        if st.button("← Edit Content", key="back_preview"):
-            go_to(4)
-    with col_restart:
-        if st.button("Start Over", key="restart"):
-            for k, v in defaults.items():
-                st.session_state[k] = v
-            go_to(0)
-
-
-# ---------------------------------------------------------------------------
-# MAIN ROUTER
-# ---------------------------------------------------------------------------
-def main():
-    step = st.session_state.step
-
-    # Render step indicator for all steps except home
-    if step > 0:
-        render_step_indicator(step)
-        st.markdown("<br>", unsafe_allow_html=True)
-
-    if step == 0:
-        render_home()
-    elif step == 1:
-        render_business_info()
-    elif step == 2:
-        render_template_picker()
-    elif step == 3:
-        render_palette_picker()
-    elif step == 4:
-        render_ai_content()
-    elif step == 5:
-        render_preview()
-    else:
-        st.error("Unknown step. Resetting.")
-        st.session_state.step = 0
+    prog  = st.progress(0, text="Connecting to Ollama...")
+    status = st.empty()
+    try:
+        status.markdown("*AI is writing your headlines, descriptions, testimonials, FAQ...*")
+        prog.progress(20, text="AI is generating content...")
+        content = generate_website_content(biz)
+        prog.progress(65, text="Rendering your template...")
+        status.markdown("*Rendering the HTML template...*")
+        html = render_site(st.session_state.template, content)
+        prog.progress(95, text="Almost done...")
+        time.sleep(0.3)
+        st.session_state.content = content
+        st.session_state.html    = html
+        prog.progress(100, text="Done!")
+        time.sleep(0.3)
+        prog.empty(); status.empty()
+        st.session_state.step = 5
         st.rerun()
+    except RuntimeError as e:
+        prog.empty()
+        st.error(str(e))
+        if st.button("← Back"): st.session_state.step = 3; st.rerun()
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STEP 5 — Preview / Edit / Download
+# ─────────────────────────────────────────────────────────────────────────────
+def step_5():
+    content = st.session_state.content
+    html    = st.session_state.html
+
+    tab_prev, tab_edit, tab_dl = st.tabs(["Live Preview", "Edit Content", "Download & Deploy"])
+
+    # ── PREVIEW ──────────────────────────────────────────────────────────────
+    with tab_prev:
+        ca, cb = st.columns(2)
+        with ca:
+            new_tmpl = st.selectbox("Switch Template", TEMPLATE_NAMES,
+                                    index=TEMPLATE_NAMES.index(st.session_state.template))
+        with cb:
+            new_pal = st.selectbox("Switch Palette", list(PALETTES.keys()),
+                                   index=list(PALETTES.keys()).index(st.session_state.color_scheme))
+        if new_tmpl != st.session_state.template or new_pal != st.session_state.color_scheme:
+            st.session_state.template = new_tmpl
+            st.session_state.color_scheme = new_pal
+            st.session_state.content["color_scheme"] = new_pal
+            st.session_state.html = render_site(new_tmpl, st.session_state.content)
+            st.rerun()
+
+        # Browser chrome mockup
+        st.markdown("""
+        <div style="background:#1A1A2E;border:1px solid #2D2D4E;border-radius:16px 16px 0 0;padding:0.7rem 1rem;display:flex;align-items:center;gap:0.5rem;margin-top:1rem;">
+          <div style="width:12px;height:12px;border-radius:50%;background:#FF5F57;"></div>
+          <div style="width:12px;height:12px;border-radius:50%;background:#FEBC2E;"></div>
+          <div style="width:12px;height:12px;border-radius:50%;background:#28C840;"></div>
+          <div style="flex:1;margin:0 1rem;background:#0E0E1A;border-radius:6px;padding:0.25rem 0.75rem;font-size:0.7rem;color:#4A4A6A;">your-business.com</div>
+        </div>""", unsafe_allow_html=True)
+
+        encoded = base64.b64encode(html.encode("utf-8")).decode("utf-8")
+        st.components.v1.html(
+            f'<iframe src="data:text/html;base64,{encoded}" style="width:100%;height:720px;border:none;border-radius:0 0 14px 14px;background:#fff;" sandbox="allow-scripts allow-same-origin"></iframe>',
+            height=722, scrolling=False,
+        )
+
+        st.markdown("---")
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("Regenerate Content", key="regen"):
+                st.session_state.content = None
+                st.session_state.html = None
+                st.session_state.step = 4
+                st.rerun()
+        with c2:
+            if st.button("← Start Over", key="restart"):
+                for k in list(st.session_state.keys()):
+                    del st.session_state[k]
+                st.rerun()
+
+    # ── EDIT ─────────────────────────────────────────────────────────────────
+    with tab_edit:
+        card_header("Edit your content",
+                    "Tweak anything before downloading. Click 'Apply' to refresh the preview.")
+        if not content:
+            st.warning("No content generated yet.")
+            return
+
+        c = dict(content)
+
+        def ef(label, key, multi=False):
+            st.markdown(f'<div class="ef-label">{label}</div>', unsafe_allow_html=True)
+            if multi:
+                return st.text_area(label, value=c.get(key,""), key=f"e_{key}",
+                                    label_visibility="collapsed", height=85)
+            return st.text_input(label, value=c.get(key,""), key=f"e_{key}",
+                                 label_visibility="collapsed")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**Hero**")
+            c["hero_headline"]    = ef("Hero Headline", "hero_headline")
+            c["hero_subheadline"] = ef("Subheadline", "hero_subheadline")
+            c["hero_cta"]         = ef("CTA Button", "hero_cta")
+            st.markdown("**About**")
+            c["about_headline"]   = ef("Headline", "about_headline")
+            c["about_paragraph"]  = ef("Paragraph", "about_paragraph", multi=True)
+            c["about_highlight_1"]= ef("Highlight 1", "about_highlight_1")
+            c["about_highlight_2"]= ef("Highlight 2", "about_highlight_2")
+            c["about_highlight_3"]= ef("Highlight 3", "about_highlight_3")
+            st.markdown("**Services**")
+            c["services_headline"]    = ef("Services Headline", "services_headline")
+            c["services_subheadline"] = ef("Services Subheadline", "services_subheadline")
+            for n in range(1,5):
+                c[f"service_{n}_name"]        = ef(f"Service {n} Name", f"service_{n}_name")
+                c[f"service_{n}_description"] = ef(f"Service {n} Description", f"service_{n}_description", multi=True)
+
+        with col2:
+            st.markdown("**Testimonials**")
+            c["testimonials_headline"] = ef("Headline", "testimonials_headline")
+            for n in range(1,4):
+                c[f"testimonial_{n}_text"] = ef(f"Testimonial {n}", f"testimonial_{n}_text", multi=True)
+                c[f"testimonial_{n}_name"] = ef(f"Name {n}", f"testimonial_{n}_name")
+                c[f"testimonial_{n}_role"] = ef(f"Role {n}", f"testimonial_{n}_role")
+            st.markdown("**FAQ**")
+            c["faq_headline"] = ef("FAQ Headline", "faq_headline")
+            for n in range(1,5):
+                c[f"faq_{n}_q"] = ef(f"Q{n}", f"faq_{n}_q")
+                c[f"faq_{n}_a"] = ef(f"A{n}", f"faq_{n}_a", multi=True)
+            st.markdown("**Footer / SEO**")
+            c["contact_headline"]    = ef("Contact Headline", "contact_headline")
+            c["contact_subheadline"] = ef("Contact Subheadline", "contact_subheadline")
+            c["footer_tagline"]      = ef("Footer Tagline", "footer_tagline")
+            c["meta_description"]    = ef("SEO Meta Description", "meta_description")
+
+        st.markdown("---")
+        if st.button("Apply Changes & Refresh Preview", key="apply"):
+            st.session_state.content = c
+            st.session_state.html = render_site(st.session_state.template, c)
+            ok("Changes applied! Switch to Live Preview to see them.")
+            st.rerun()
+
+    # ── DOWNLOAD ─────────────────────────────────────────────────────────────
+    with tab_dl:
+        card_header("Download & Deploy",
+                    "Your website is ready. Download the files and go live in minutes.")
+
+        c1, c2, c3 = st.columns(3)
+        with c1: st.markdown(mini_card("Business", st.session_state.business_name), unsafe_allow_html=True)
+        with c2: st.markdown(mini_card("Template", f"{st.session_state.template.capitalize()} · {st.session_state.color_scheme}"), unsafe_allow_html=True)
+        with c3: st.markdown(mini_card("Sections", f"{len(st.session_state.sections)} included"), unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.markdown("#### Download")
+        d1, d2 = st.columns(2)
+        with d1:
+            st.download_button(
+                "Download index.html (all-in-one)",
+                data=st.session_state.html.encode("utf-8"),
+                file_name="index.html", mime="text/html",
+                use_container_width=True,
+            )
+            st.caption("All styles and scripts embedded in one file — just open in a browser.")
+        with d2:
+            zip_data = build_zip(st.session_state.html, st.session_state.business_name)
+            slug = st.session_state.business_name.lower().replace(" ","-")
+            st.download_button(
+                "Download ZIP (index.html + style.css + script.js)",
+                data=zip_data,
+                file_name=f"{slug}-website.zip",
+                mime="application/zip",
+                use_container_width=True,
+            )
+            st.caption("Separated files + a `deploy.sh` script for GitHub Pages.")
+
+        st.markdown("---")
+        st.markdown("#### Deploy to GitHub Pages (free hosting)")
+        st.markdown("""
+<div style="background:#1A1A2E;border:1px solid #2D2D4E;border-radius:14px;padding:1.75rem;">
+  <div style="font-size:0.92rem;font-weight:700;color:#E8E8F0;margin-bottom:1rem;">Three steps to go live:</div>
+  <ol style="color:#A0A0C0;font-size:0.86rem;line-height:2.2;padding-left:1.25rem;">
+    <li>Download the ZIP above and extract it to a folder</li>
+    <li>Install the GitHub CLI if needed: <code style="background:#0E0E1A;padding:0.1rem 0.5rem;border-radius:4px;color:#A78BFA;">brew install gh &amp;&amp; gh auth login</code></li>
+    <li>Run the deploy script: <code style="background:#0E0E1A;padding:0.1rem 0.5rem;border-radius:4px;color:#4ADE80;">bash deploy.sh your-github-username</code></li>
+  </ol>
+  <div style="margin-top:1rem;font-size:0.8rem;color:#6B6B8A;">
+    Your site will be live at <strong style="color:#6C63FF;">https://your-username.github.io/your-business-website</strong> — forever, for free.
+  </div>
+</div>""", unsafe_allow_html=True)
+
+        st.markdown("---")
+        if st.button("← Build Another Website", key="another"):
+            for k in list(st.session_state.keys()):
+                del st.session_state[k]
+            st.rerun()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MAIN
+# ─────────────────────────────────────────────────────────────────────────────
+def main():
+    render_header()
+    render_progress(st.session_state.step)
+    _, center, _ = st.columns([0.3, 10, 0.3])
+    with center:
+        step = st.session_state.step
+        if   step == 1: step_1()
+        elif step == 2: step_2()
+        elif step == 3: step_3()
+        elif step == 4: step_4()
+        elif step == 5: step_5()
 
 if __name__ == "__main__":
     main()

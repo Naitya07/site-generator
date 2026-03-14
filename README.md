@@ -1,42 +1,72 @@
-# SiteForge — AI-Powered Website Generator
+# SiteForge — Small Business Website Generator
 
-Generate professional, responsive websites in minutes using AI. Answer a few questions about your business, pick a template and color palette, and SiteForge builds a complete single-page website you can download and deploy.
+Answer 5-6 questions → AI generates a complete, responsive website → preview it live → download and deploy.
 
-## Features
-
-- **5 Professional Templates** — Clean, Bold, Warm, Corporate, Starter
-- **5 Color Palettes** — Modern Blue, Warm Orange, Forest Green, Elegant Dark, Clean Minimal
-- **AI Content Generation** — Ollama generates all website copy (headlines, services, testimonials, FAQs)
-- **Live Preview** — See your website rendered in real-time before downloading
-- **One-Click Export** — Download as ZIP with `index.html`, `style.css`, `script.js`, and a GitHub Pages deploy script
-- **100% Local** — No API keys, no cloud, everything runs on your machine
-
-## Quick Start
+## Setup
 
 ```bash
-# 1. Install Ollama (https://ollama.com)
-ollama pull llama3.2
-
-# 2. Clone and install
-git clone https://github.com/Naitya07/site-generator.git
-cd site-generator
+cd ~/site-generator
 pip install -r requirements.txt
+```
 
-# 3. Run
+Pull the AI model (one-time):
+
+```bash
+ollama pull llama3.2
+ollama serve          # keep this running in a terminal
+```
+
+Run the app:
+
+```bash
 streamlit run app.py
+```
+
+## What You Get
+
+- **5-step wizard** — business info, design, sections, AI generation, download
+- **5 templates** — Clean, Bold, Warm, Corporate, Starter
+- **5 color palettes** — Modern Blue, Warm Orange, Forest Green, Elegant Dark, Clean Minimal
+- **8 optional sections** — Hero, About, Services, Testimonials, Gallery, Contact Form, Map, FAQ
+- **AI-generated copy** — headlines, taglines, descriptions, testimonials, FAQ answers
+- **Live preview** — rendered in an iframe inside the app
+- **Edit mode** — tweak any text before downloading
+- **ZIP download** — index.html + style.css + script.js + deploy.sh
+- **GitHub Pages deploy script** — go live for free in minutes
+
+## File Structure
+
+```
+site-generator/
+├── app.py                  Main Streamlit app
+├── core/
+│   ├── content_gen.py      AI content via Ollama (llama3.2)
+│   ├── renderer.py         Jinja2 template rendering + palettes
+│   └── exporter.py         ZIP builder + deploy script
+├── templates/
+│   ├── clean.html
+│   ├── bold.html
+│   ├── warm.html
+│   ├── corporate.html
+│   └── starter.html
+├── .streamlit/
+│   └── config.toml         Dark theme
+└── requirements.txt
 ```
 
 ## Tech Stack
 
-- **Frontend:** Streamlit with custom dark theme
-- **AI:** Ollama (llama3.2) for content generation
-- **Templating:** Jinja2 with responsive HTML/CSS/JS
-- **Export:** ZIP packaging with CSS/JS extraction
+- **Streamlit** — UI framework
+- **Ollama (llama3.2)** — Local AI, no API key needed
+- **Jinja2** — HTML templating
+- **Python stdlib** — zipfile, base64, requests
 
-## How It Works
+## Generated Site Features
 
-1. **Business Info** — Enter your business name, description, services, and contact details
-2. **Choose Template** — Pick from 5 professionally designed responsive templates
-3. **Choose Palette** — Select a color scheme that matches your brand
-4. **AI Generation** — Ollama generates all website content based on your inputs
-5. **Preview & Download** — Review the live preview, then download as a ready-to-deploy ZIP
+- Google Fonts (Inter / Poppins)
+- Smooth scroll navigation
+- Mobile-first responsive layout
+- Fade-in animations on scroll
+- Working contact form (mailto:)
+- SEO meta tags
+- GitHub Pages deploy script
